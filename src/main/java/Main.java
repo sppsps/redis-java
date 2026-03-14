@@ -1,3 +1,5 @@
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -22,7 +24,9 @@ public class Main {
         } finally {
           try {
             if (clientSocket != null) {
-              clientSocket.close();
+                DataOutputStream outputStream = new DataOutputStream(clientSocket.getOutputStream());
+                outputStream.writeBytes("+PONG\r\n");
+                clientSocket.close();
             }
           } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());
