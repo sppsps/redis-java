@@ -16,17 +16,14 @@ public class Main {
           // ensures that we don't run into 'Address already in use' errors
           serverSocket.setReuseAddress(true);
           // Wait for connection from client.
-          clientSocket = serverSocket.accept();
-          DataInputStream inputStream = new DataInputStream(clientSocket.getInputStream());
-          DataOutputStream outputStream = new DataOutputStream(clientSocket.getOutputStream());
-          BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-          String line;
-          while(true) {
-              line = bufferedReader.readLine();
-              if(line==null) break;
-              if("PING".equals(line)) outputStream.write("+PONG\r\n".getBytes());
-              outputStream.flush();
-
+          while(true){
+                clientSocket = serverSocket.accept();
+                if(clientSocket==null) break;
+                DataInputStream inputStream = new DataInputStream(clientSocket.getInputStream());
+                DataOutputStream outputStream = new DataOutputStream(clientSocket.getOutputStream());
+                ParallelRequestProcessor requestProcessor = new ParallelRequestProcessor(inputStream, outputStream);
+                Thread thread = new Thread(requestProcessor);
+                thread.start();
           }
         } catch (IOException e) {
           System.out.println("IOException: " + e.getMessage());
