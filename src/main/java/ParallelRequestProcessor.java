@@ -18,6 +18,7 @@ public class ParallelRequestProcessor implements Runnable {
     private InputStream in;
     private OutputStream out;
     private HashMap<String, Value> map = new HashMap<>();
+    HashMap<String, List<String>> listMap = new HashMap<>();
     private List<String> l = new ArrayList<>();
     private final Logger LOG = LogManager.getLogger(ParallelRequestProcessor.class);
 
@@ -25,11 +26,19 @@ public class ParallelRequestProcessor implements Runnable {
     public void run() {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(in));
         StringReader reader = new StringReader(bufferedReader);
+        String numArgs = "";
+        try {
+            numArgs = bufferedReader.readLine();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        int args = Integer.parseInt(numArgs.substring(1));
         while(true){
             try {
                 String line = bufferedReader.readLine();
                 LOG.info(line);
                 if(line==null) break;
+                if(line.startsWith("*")) args = Integer.parseInt(line.substring(1));
                 if("PING".equals(line)) {
                     out.write("+PONG\r\n".getBytes());
                     out.flush();
@@ -48,7 +57,7 @@ public class ParallelRequestProcessor implements Runnable {
                 }
                 else if("RPUSH".equals(line)) {
                     IListCommand listCommand = new RPushCommand();
-                    listCommand.execute(bufferedReader, l, out);
+                    listCommand.execute(bufferedReader, listMap, out, args-2);
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
