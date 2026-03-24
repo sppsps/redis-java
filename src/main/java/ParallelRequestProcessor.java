@@ -59,6 +59,10 @@ public class ParallelRequestProcessor implements Runnable {
                     IListCommand listCommand = new RPushCommand();
                     listCommand.execute(bufferedReader, listMap, out, args-2);
                 }
+                else if("LRANGE".equals(line)) {
+                    IListCommand lrangeCommand = new LRangeCommand();
+                    lrangeCommand.execute(bufferedReader, listMap, out, args);
+                }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
