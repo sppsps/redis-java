@@ -20,15 +20,38 @@ public class LpopCommand implements IListCommand{
         String command = reader.read();
         log.info("Command: "+command);
         List<String> s = listMap.getOrDefault(command, new ArrayList<>());
+        log.info("Size of list: "+ s.size());
         String val = "";
         if(s.size()==0) {
             out.write("$-1\r\n".getBytes());
             return;
         }
+        int numRemoves = 1;
 
-        String first = s.getFirst();
-        s.removeFirst();
-        log.info("completed");
-        out.write(("$" + first.length() + "\r\n" + first + "\r\n").getBytes());
+        if (numArgs == 3) {
+            String countStr = reader.read();
+            numRemoves = Integer.parseInt(countStr);
+        }
+        log.info("Number of removals: " + numRemoves);
+        List<String>removed = new ArrayList<>();
+        while(numRemoves>0) {
+            String first = s.getFirst();
+            removed.add(first);
+            s.removeFirst();
+            numRemoves--;
+        }
+        log.info("Removed array "+ removed);
+        if(removed.size()==1) {
+            out.write(("$"+removed.getFirst().length()+"\r\n"+removed.getFirst()+"\r\n").getBytes());
+            return;
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("*").append(removed.size()).append("\r\n");
+        for(String element: removed) {
+                sb.append("$").append(element.length()).append("\r\n").append(element).append("\r\n");
+        };
+        log.info("stringbuilder: " + sb.toString());
+        out.write(sb.toString().getBytes());
+        out.flush();
     }
 }
