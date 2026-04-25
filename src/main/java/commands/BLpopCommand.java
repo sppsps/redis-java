@@ -33,7 +33,7 @@ public class BLpopCommand implements IListCommand {
         Lock lock = lockObject.getLock();
         lock.lock();
         try {
-            long remaining = Long.parseLong(timeout) * 1000L;
+            double remaining = Double.parseDouble(timeout)*1000;
             if(!list.isEmpty()) {
                 ;
             }
@@ -42,9 +42,12 @@ public class BLpopCommand implements IListCommand {
                     condition.await(); // wait indefinitely
             } else {
                 long start = System.currentTimeMillis();
-                condition.awaitNanos(remaining * 1_000_000);
-                long waited = System.currentTimeMillis() - start;
-                remaining -= waited;
+                condition.awaitNanos((long)(remaining * 1_000_000));
+                log.info("waited time: " + (long)(remaining * 1_000_000));
+                if(l.get(listKey).isEmpty()) {
+                    out.write("*-1\r\n".getBytes());
+                    return;
+                }
             }
             list = l.get(listKey);
             removed = list.removeFirst();
