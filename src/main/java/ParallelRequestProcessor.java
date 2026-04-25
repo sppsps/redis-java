@@ -1,4 +1,6 @@
 import commands.*;
+import dto.Commands;
+import dto.LockObject;
 import dto.StringReader;
 import dto.Value;
 import lombok.Getter;
@@ -10,6 +12,10 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 @Setter
@@ -17,8 +23,9 @@ import java.util.List;
 public class ParallelRequestProcessor implements Runnable {
     private InputStream in;
     private OutputStream out;
+    ConcurrentHashMap<String, LockObject> lockMap;
     private HashMap<String, Value> map = new HashMap<>();
-    HashMap<String, List<String>> listMap = new HashMap<>();
+    ConcurrentHashMap<String, List<String>> listMap;
     private List<String> l = new ArrayList<>();
     private final Logger LOG = LogManager.getLogger(ParallelRequestProcessor.class);
 
@@ -27,6 +34,7 @@ public class ParallelRequestProcessor implements Runnable {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(in));
         StringReader reader = new StringReader(bufferedReader);
         String numArgs = "";
+
         try {
             numArgs = bufferedReader.readLine();
         } catch (IOException e) {
@@ -57,32 +65,38 @@ public class ParallelRequestProcessor implements Runnable {
                 }
                 else if("RPUSH".equals(line)) {
                     IListCommand listCommand = new RPushCommand();
-                    listCommand.execute(bufferedReader, listMap, out, args-2);
+                    listCommand.execute(bufferedReader, listMap, out, args-2, lockMap);
                 }
                 else if("LRANGE".equals(line)) {
                     IListCommand lrangeCommand = new LRangeCommand();
-                    lrangeCommand.execute(bufferedReader, listMap, out, args);
+                    lrangeCommand.execute(bufferedReader, listMap, out, args, lockMap);
                 }
                 else if("LPUSH".equals(line)) {
                     IListCommand lpush = new LPushCommand();
-                    lpush.execute(bufferedReader, listMap, out, args-2);
+                    lpush.execute(bufferedReader, listMap, out, args-2, lockMap);
                 }
                 else if("LLEN".equals(line)) {
                     IListCommand llen = new LlenCommand();
-                    llen.execute(bufferedReader, listMap, out, args);
+                    llen.execute(bufferedReader, listMap, out, args, lockMap);
                 }
                 else if("LPOP".equals(line)) {
                     IListCommand lpop = new LpopCommand();
-                    lpop.execute(bufferedReader, listMap, out, args);
+                    lpop.execute(bufferedReader, listMap, out, args, lockMap);
                 }
-            } catch (IOException e) {
+                else if("BLPOP".equals(line)) {
+                    IListCommand blpop = new BLpopCommand();
+                    blpop.execute(bufferedReader, listMap, out, args, lockMap);
+                }
+            } catch (IOException | InterruptedException e) {
                 throw new RuntimeException(e);
             }
         }
     }
 
-    public ParallelRequestProcessor(InputStream in, OutputStream out) {
+    public ParallelRequestProcessor(InputStream in, OutputStream out, ConcurrentHashMap<String, LockObject> lockMap, ConcurrentHashMap<String, List<String>> listMap) {
         this.in = in;
         this.out = out;
+        this.lockMap = lockMap;
+        this.listMap = listMap;
     }
 }

@@ -1,7 +1,14 @@
+import dto.LockObject;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Main {
   public static void main(String[] args) throws IOException {
@@ -17,12 +24,15 @@ public class Main {
           // ensures that we don't run into 'Address already in use' errors
           serverSocket.setReuseAddress(true);
           // Wait for connection from client.
+            ConcurrentHashMap<String, LockObject> lockMap = new ConcurrentHashMap<>();
+            ConcurrentHashMap<String, List<String>> listMap = new ConcurrentHashMap<>();
           while(true){
                 clientSocket = serverSocket.accept();
                 if(clientSocket==null) break;
+
                 DataInputStream inputStream = new DataInputStream(clientSocket.getInputStream());
                 DataOutputStream outputStream = new DataOutputStream(clientSocket.getOutputStream());
-                ParallelRequestProcessor requestProcessor = new ParallelRequestProcessor(inputStream, outputStream);
+                ParallelRequestProcessor requestProcessor = new ParallelRequestProcessor(inputStream, outputStream, lockMap, listMap);
                 Thread thread = new Thread(requestProcessor);
                 thread.start();
           }

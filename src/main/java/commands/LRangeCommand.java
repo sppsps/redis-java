@@ -1,5 +1,6 @@
 package commands;
 
+import dto.LockObject;
 import dto.StringReader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -10,11 +11,12 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class LRangeCommand implements IListCommand{
     private Logger log = LogManager.getLogger(LRangeCommand.class);
     @Override
-    public void execute(BufferedReader bufferedReader, HashMap<String, List<String>> listMap, OutputStream out, int numArgs) throws IOException {
+    public void execute(BufferedReader bufferedReader, ConcurrentHashMap<String, List<String>> listMap, OutputStream out, int numArgs, ConcurrentHashMap<String, LockObject> lockMap) throws IOException {
         StringReader reader = new StringReader(bufferedReader);
         String command = reader.read();
 
