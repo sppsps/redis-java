@@ -3,6 +3,7 @@ import dto.LockObject;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,13 +27,14 @@ public class Main {
           // Wait for connection from client.
             ConcurrentHashMap<String, LockObject> lockMap = new ConcurrentHashMap<>();
             ConcurrentHashMap<String, List<String>> listMap = new ConcurrentHashMap<>();
+            ConcurrentHashMap<String, HashMap<String, String>> streamMap = new ConcurrentHashMap<>();
           while(true){
                 clientSocket = serverSocket.accept();
                 if(clientSocket==null) break;
 
                 DataInputStream inputStream = new DataInputStream(clientSocket.getInputStream());
                 DataOutputStream outputStream = new DataOutputStream(clientSocket.getOutputStream());
-                ParallelRequestProcessor requestProcessor = new ParallelRequestProcessor(inputStream, outputStream, lockMap, listMap);
+                ParallelRequestProcessor requestProcessor = new ParallelRequestProcessor(inputStream, outputStream, lockMap, listMap, streamMap);
                 Thread thread = new Thread(requestProcessor);
                 thread.start();
           }

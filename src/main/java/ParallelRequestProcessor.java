@@ -21,6 +21,7 @@ import java.util.concurrent.locks.ReentrantLock;
 @Setter
 @Getter
 public class ParallelRequestProcessor implements Runnable {
+    private final ConcurrentHashMap<String, HashMap<String, String>> streamMap;
     private InputStream in;
     private OutputStream out;
     ConcurrentHashMap<String, LockObject> lockMap;
@@ -84,12 +85,16 @@ public class ParallelRequestProcessor implements Runnable {
                     lpop.execute(bufferedReader, listMap, out, args, lockMap);
                 }
                 else if("TYPE".equals(line)) {
-                    ISetGetCommand typeCommand = new TypeCommand();
-                    typeCommand.execute(bufferedReader, map, out);
+                    ITypeCommand typeCommand = new TypeCommand();
+                    typeCommand.execute(bufferedReader, map, streamMap, out);
                 }
                 else if("BLPOP".equals(line)) {
                     IListCommand blpop = new BLpopCommand();
                     blpop.execute(bufferedReader, listMap, out, args, lockMap);
+                }
+                else if("XADD".equals(line)) {
+                    StreamCommand streamCommand = new XAddCommand();
+                    streamCommand.execute(bufferedReader, streamMap, out, args-3);
                 }
             } catch (IOException | InterruptedException e) {
                 throw new RuntimeException(e);
@@ -97,10 +102,11 @@ public class ParallelRequestProcessor implements Runnable {
         }
     }
 
-    public ParallelRequestProcessor(InputStream in, OutputStream out, ConcurrentHashMap<String, LockObject> lockMap, ConcurrentHashMap<String, List<String>> listMap) {
+    public ParallelRequestProcessor(InputStream in, OutputStream out, ConcurrentHashMap<String, LockObject> lockMap, ConcurrentHashMap<String, List<String>> listMap, ConcurrentHashMap<String, HashMap<String, String>> streamMap) {
         this.in = in;
         this.out = out;
         this.lockMap = lockMap;
         this.listMap = listMap;
+        this.streamMap = streamMap;
     }
 }
