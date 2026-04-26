@@ -83,6 +83,10 @@ public class ParallelRequestProcessor implements Runnable {
                     IListCommand lpop = new LpopCommand();
                     lpop.execute(bufferedReader, listMap, out, args, lockMap);
                 }
+                else if("TYPE".equals(line)) {
+                    ISetGetCommand typeCommand = new TypeCommand();
+                    typeCommand.execute(bufferedReader, map, out);
+                }
                 else if("BLPOP".equals(line)) {
                     IListCommand blpop = new BLpopCommand();
                     blpop.execute(bufferedReader, listMap, out, args, lockMap);
