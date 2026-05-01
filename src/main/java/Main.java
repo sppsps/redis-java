@@ -1,10 +1,12 @@
 import dto.LockObject;
+import dto.StreamKey;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Stack;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Condition;
@@ -27,14 +29,14 @@ public class Main {
           // Wait for connection from client.
             ConcurrentHashMap<String, LockObject> lockMap = new ConcurrentHashMap<>();
             ConcurrentHashMap<String, List<String>> listMap = new ConcurrentHashMap<>();
-            ConcurrentHashMap<String, HashMap<String, String>> streamMap = new ConcurrentHashMap<>();
+            ConcurrentHashMap<StreamKey, HashMap<String, String>> streamMap = new ConcurrentHashMap<>();
+            HashMap<String, List<StreamKey>> streamKeyMap = new HashMap<>();
           while(true){
                 clientSocket = serverSocket.accept();
                 if(clientSocket==null) break;
-
                 DataInputStream inputStream = new DataInputStream(clientSocket.getInputStream());
                 DataOutputStream outputStream = new DataOutputStream(clientSocket.getOutputStream());
-                ParallelRequestProcessor requestProcessor = new ParallelRequestProcessor(inputStream, outputStream, lockMap, listMap, streamMap);
+                ParallelRequestProcessor requestProcessor = new ParallelRequestProcessor(inputStream, outputStream, lockMap, listMap, streamMap, streamKeyMap);
                 Thread thread = new Thread(requestProcessor);
                 thread.start();
           }

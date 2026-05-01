@@ -1,8 +1,6 @@
 import commands.*;
-import dto.Commands;
-import dto.LockObject;
+import dto.*;
 import dto.StringReader;
-import dto.Value;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
@@ -12,6 +10,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -21,7 +20,7 @@ import java.util.concurrent.locks.ReentrantLock;
 @Setter
 @Getter
 public class ParallelRequestProcessor implements Runnable {
-    private final ConcurrentHashMap<String, HashMap<String, String>> streamMap;
+    private final ConcurrentHashMap<StreamKey, HashMap<String, String>> streamMap;
     private InputStream in;
     private OutputStream out;
     ConcurrentHashMap<String, LockObject> lockMap;
@@ -29,6 +28,7 @@ public class ParallelRequestProcessor implements Runnable {
     ConcurrentHashMap<String, List<String>> listMap;
     private List<String> l = new ArrayList<>();
     private final Logger LOG = LogManager.getLogger(ParallelRequestProcessor.class);
+    HashMap<String, List<StreamKey>> streamKeyIdMap;
 
     @Override
     public void run() {
@@ -86,7 +86,7 @@ public class ParallelRequestProcessor implements Runnable {
                 }
                 else if("TYPE".equals(line)) {
                     ITypeCommand typeCommand = new TypeCommand();
-                    typeCommand.execute(bufferedReader, map, streamMap, out);
+                    typeCommand.execute(bufferedReader, map, streamKeyIdMap, out);
                 }
                 else if("BLPOP".equals(line)) {
                     IListCommand blpop = new BLpopCommand();
@@ -94,7 +94,7 @@ public class ParallelRequestProcessor implements Runnable {
                 }
                 else if("XADD".equals(line)) {
                     StreamCommand streamCommand = new XAddCommand();
-                    streamCommand.execute(bufferedReader, streamMap, out, args-3);
+                    streamCommand.execute(bufferedReader, streamMap, out, args-3, streamKeyIdMap);
                 }
             } catch (IOException | InterruptedException e) {
                 throw new RuntimeException(e);
@@ -102,11 +102,12 @@ public class ParallelRequestProcessor implements Runnable {
         }
     }
 
-    public ParallelRequestProcessor(InputStream in, OutputStream out, ConcurrentHashMap<String, LockObject> lockMap, ConcurrentHashMap<String, List<String>> listMap, ConcurrentHashMap<String, HashMap<String, String>> streamMap) {
+    public ParallelRequestProcessor(InputStream in, OutputStream out, ConcurrentHashMap<String, LockObject> lockMap, ConcurrentHashMap<String, List<String>> listMap, ConcurrentHashMap<StreamKey, HashMap<String, String>> streamMap, HashMap<String, List<StreamKey>> st) {
         this.in = in;
         this.out = out;
         this.lockMap = lockMap;
         this.listMap = listMap;
         this.streamMap = streamMap;
+        this.streamKeyIdMap = st;
     }
 }
