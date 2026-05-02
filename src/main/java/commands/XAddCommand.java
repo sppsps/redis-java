@@ -21,11 +21,18 @@ public class XAddCommand implements StreamCommand{
         StringReader stringReader = new StringReader(reader);
         String listKey = stringReader.read();
         String id = stringReader.read();
-        String[] key = id.split("-");
-        StreamKey streamKey = new StreamKey(key[0], key[1]);
+        StreamKey streamKey = null;
         List<StreamKey> streamIdList = keyList.getOrDefault(listKey, new ArrayList<>());
-        if(key[1].equals("*")) {
-            autoIncrement(streamKey, keyList.get(listKey));
+        if(id.equals("*")) {
+            streamKey = fullyAutomatedId(keyList.get(listKey));
+        }
+        else {
+            String[] key = id.split("-");
+            streamKey = new StreamKey(key[0], key[1]);
+
+            if (key[1].equals("*")) {
+                partiallyAutomatedId(streamKey, keyList.get(listKey));
+            }
         }
         HashMap<String, String> mapList = new HashMap<>();
 
@@ -44,10 +51,20 @@ public class XAddCommand implements StreamCommand{
             mapList.put(arg, val);
         }
         map.put(streamKey, mapList);
-        out.write(("$"+id.length()+"\r\n"+streamKey.toString()+"\r\n").getBytes());
+        out.write(("$"+streamKey.length()+"\r\n"+streamKey.toString()+"\r\n").getBytes());
     }
 
-    private void autoIncrement(StreamKey streamKey, List<StreamKey> streamKeys) {
+    private StreamKey fullyAutomatedId(List<StreamKey> streamKeys) {
+        String curTime = String.valueOf(System.currentTimeMillis());
+        if(streamKeys==null) {
+            return new StreamKey(curTime, "0");
+        }
+        StreamKey key = new StreamKey(curTime, "*");
+        partiallyAutomatedId(key, streamKeys);
+        return key;
+    }
+
+    private void partiallyAutomatedId(StreamKey streamKey, List<StreamKey> streamKeys) {
         String millis = streamKey.getMillisTime();
         StreamKey latestKey = null;
         if(streamKeys==null) {

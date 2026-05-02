@@ -13,6 +13,10 @@ public class StreamKey {
         this.millisTime = millisTime;
     }
 
+    public int length() {
+        return millisTime.length()+seqNum.length()+1;
+    }
+
     public String getSeqNum() {
         return seqNum;
     }
