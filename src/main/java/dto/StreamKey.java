@@ -4,6 +4,10 @@ public class StreamKey {
     String millisTime;
     String seqNum;
 
+    @Override
+    public String toString() {
+        return millisTime+"-"+seqNum;
+    }
     public StreamKey(String millisTime, String seqNum) {
         this.seqNum = seqNum;
         this.millisTime = millisTime;

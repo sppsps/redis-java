@@ -24,6 +24,9 @@ public class XAddCommand implements StreamCommand{
         String[] key = id.split("-");
         StreamKey streamKey = new StreamKey(key[0], key[1]);
         List<StreamKey> streamIdList = keyList.getOrDefault(listKey, new ArrayList<>());
+        if(key[1].equals("*")) {
+            autoIncrement(streamKey, keyList.get(listKey));
+        }
         HashMap<String, String> mapList = new HashMap<>();
 
         if(!validateId(out, map, streamKey, streamIdList)) {
@@ -41,7 +44,25 @@ public class XAddCommand implements StreamCommand{
             mapList.put(arg, val);
         }
         map.put(streamKey, mapList);
-        out.write(("$"+id.length()+"\r\n"+id+"\r\n").getBytes());
+        out.write(("$"+id.length()+"\r\n"+streamKey.toString()+"\r\n").getBytes());
+    }
+
+    private void autoIncrement(StreamKey streamKey, List<StreamKey> streamKeys) {
+        String millis = streamKey.getMillisTime();
+        StreamKey latestKey = null;
+        if(streamKeys==null) {
+            if(streamKey.getMillisTime().equals("0")) streamKey.setSeqNum("1");
+            else streamKey.setSeqNum("0");
+            return;
+        }
+        for (StreamKey key : streamKeys) {
+            if(key.getMillisTime().equals(millis)) latestKey = key;
+        }
+        if(latestKey==null) {
+            if(streamKey.getMillisTime().equals("0")) streamKey.setSeqNum("1");
+            else streamKey.setSeqNum("0");
+        }
+        else streamKey.setSeqNum(String.valueOf(Integer.parseInt(latestKey.getSeqNum()) + 1));
     }
 
     private boolean validateId(OutputStream out, ConcurrentHashMap<StreamKey, HashMap<String, String>> map, StreamKey curKey, List<StreamKey> st) throws IOException {
