@@ -39,11 +39,13 @@ public class StreamKey {
         boolean compare1 = false;
         boolean compare2 = false;
         if(startId.contains("-")) {
-            startIds = startId.split("-");
-            compare1 = compareIdsMore(startIds);
-//            if(millisTime.compareTo(startIds[0])>=0 && millisTime.compareTo(endIds[0])<=0
-//                    && seqNum.compareTo(startIds[1])>=0 && seqNum.compareTo(endIds[1])<=0) return true;
-//            else return false;
+            if(startId.equals("-")) {
+                compare1 = true;
+            }
+            else {
+                startIds = startId.split("-");
+                compare1 = compareIdsMore(startIds);
+            }
         }
         else {
             compare1 = compareIdsMore(startId);
