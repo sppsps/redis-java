@@ -16,14 +16,24 @@ public class XReadCommand implements StreamCommand{
     public void execute(BufferedReader reader, ConcurrentHashMap<StreamKey, HashMap<String, String>> map, OutputStream out, int args, HashMap<String, List<StreamKey>> keyMap) throws IOException {
         StringReader stringReader = new StringReader(reader);
         String readType = stringReader.read();
-        String listKey = stringReader.read();
-        String startId = stringReader.read();
+        List<String>listKeys = new ArrayList<>();
+        List<String> startIds = new ArrayList<>();
+        for(int i=0;i<args;i++) {
+            if(i<args/2) listKeys.add(stringReader.read());
+            else startIds.add(stringReader.read());
+        }
+        out.write(("*"+listKeys.size()+"\r\n").getBytes());
+        for(int i=0;i<listKeys.size();i++) {
+            processReads(out, listKeys.get(i), startIds.get(i), keyMap, map);
+        }
+    }
+
+    private void processReads(OutputStream out, String listKey, String startId, HashMap<String, List<StreamKey>> keyMap, ConcurrentHashMap<StreamKey, HashMap<String, String>> map) throws IOException {
         List<StreamKey> keys = keyMap.get(listKey);
         List<StreamKey> keysInRange = new ArrayList<>();
         keys.forEach((key)->{
             if(key.inRange(startId, "+")) keysInRange.add(key);
         });
-        out.write(("*"+keysInRange.size()+"\r\n").getBytes());
         out.write(("*"+"2"+"\r\n").getBytes());
         out.write(("$"+listKey.length()+"\r\n"+listKey+"\r\n").getBytes());
         out.write(("*" + keysInRange.size() + "\r\n").getBytes());

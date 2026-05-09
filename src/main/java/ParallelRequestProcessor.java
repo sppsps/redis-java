@@ -102,7 +102,7 @@ public class ParallelRequestProcessor implements Runnable {
                 }
                 else if("XREAD".equals(line)) {
                     StreamCommand xreadCommand = new XReadCommand();
-                    xreadCommand.execute(bufferedReader, streamMap, out, args-3, streamKeyIdMap);
+                    xreadCommand.execute(bufferedReader, streamMap, out, args-2, streamKeyIdMap);
                 }
             } catch (IOException | InterruptedException e) {
                 throw new RuntimeException(e);
