@@ -32,4 +32,47 @@ public class StreamKey {
     public void setMillisTime(String millisTime) {
         this.millisTime = millisTime;
     }
+
+    public boolean inRange(String startId, String endId) {
+        String[] startIds = new String[2];
+        String[] endIds = new String[2];
+        boolean compare1 = false;
+        boolean compare2 = false;
+        if(startId.contains("-")) {
+            startIds = startId.split("-");
+            compare1 = compareIdsMore(startIds);
+//            if(millisTime.compareTo(startIds[0])>=0 && millisTime.compareTo(endIds[0])<=0
+//                    && seqNum.compareTo(startIds[1])>=0 && seqNum.compareTo(endIds[1])<=0) return true;
+//            else return false;
+        }
+        else {
+            compare1 = compareIdsMore(startId);
+        }
+        if(endId.contains("-")) {
+            endIds = endId.split("-");
+            compare2 = compareIdsLess(endIds);
+        }
+        else {
+            compare2 = compareIdsLess(endId);
+        }
+        return compare1 && compare2;
+    }
+
+    private boolean compareIdsMore(String[] Id) {
+        if(millisTime.compareTo(Id[0])>=0 && seqNum.compareTo(Id[1])>=0) return true;
+            else return false;
+    }
+
+    private boolean compareIdsLess(String[] Id) {
+        if(millisTime.compareTo(Id[0])<=0 && seqNum.compareTo(Id[1])<=0) return true;
+        else return false;
+    }
+
+    private boolean compareIdsMore(String startId) {
+        return millisTime.compareTo(startId) >= 0;
+    }
+
+    private boolean compareIdsLess(String Id) {
+        return millisTime.compareTo(Id) <= 0;
+    }
 }

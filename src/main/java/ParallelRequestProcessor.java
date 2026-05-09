@@ -93,8 +93,12 @@ public class ParallelRequestProcessor implements Runnable {
                     blpop.execute(bufferedReader, listMap, out, args, lockMap);
                 }
                 else if("XADD".equals(line)) {
-                    StreamCommand streamCommand = new XAddCommand();
-                    streamCommand.execute(bufferedReader, streamMap, out, args-3, streamKeyIdMap);
+                    StreamCommand xAddCommand = new XAddCommand();
+                    xAddCommand.execute(bufferedReader, streamMap, out, args-3, streamKeyIdMap);
+                }
+                else if("XRANGE".equals(line)) {
+                    StreamCommand xrangeCommand = new XRangeCommand();
+                    xrangeCommand.execute(bufferedReader, streamMap, out, args-3, streamKeyIdMap);
                 }
             } catch (IOException | InterruptedException e) {
                 throw new RuntimeException(e);
