@@ -55,7 +55,8 @@ public class StreamKey {
             compare2 = compareIdsLess(endIds);
         }
         else {
-            compare2 = compareIdsLess(endId);
+            if(endId.equals("+")) compare2 = true;
+            else compare2 = compareIdsLess(endId);
         }
         return compare1 && compare2;
     }
