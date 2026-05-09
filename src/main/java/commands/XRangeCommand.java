@@ -25,9 +25,15 @@ public class XRangeCommand implements StreamCommand{
         });
         out.write(("*"+keysInRange.size()+"\r\n").getBytes());
         keysInRange.forEach((key)->{
+            try {
+                out.write(("*"+"2"+"\r\n").getBytes());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
             HashMap<String, String> keyVals = map.get(key);
             try {
-                out.write(("*"+keysInRange.size()+"\r\n").getBytes());
+
                 out.write(("$"+key.length()+"\r\n"+key+"\r\n").getBytes());
                 out.write(("*"+keyVals.size()*2+"\r\n").getBytes());
                 keyVals.forEach((k, v)->{
