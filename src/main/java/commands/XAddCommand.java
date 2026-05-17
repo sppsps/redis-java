@@ -1,6 +1,7 @@
 package commands;
 
 import com.sun.source.doctree.EscapeTree;
+import dto.LockObject;
 import dto.StreamKey;
 import dto.StringReader;
 
@@ -13,14 +14,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
 import java.util.stream.Stream;
 
 public class XAddCommand implements StreamCommand{
     @Override
-    public void execute(BufferedReader reader, ConcurrentHashMap<StreamKey, HashMap<String, String>> map, OutputStream out, int args, HashMap<String, List<StreamKey>> keyList) throws IOException {
+    public void execute(BufferedReader reader, ConcurrentHashMap<StreamKey, HashMap<String, String>> map, OutputStream out, int args, HashMap<String, List<StreamKey>> keyList, ConcurrentHashMap<String, LockObject> lockMap) throws IOException {
         StringReader stringReader = new StringReader(reader);
         String listKey = stringReader.read();
         String id = stringReader.read();
+        if(!lockMap.containsKey(listKey)) lockMap.put(listKey, new LockObject());
+        LockObject lockObject = lockMap.get(listKey);
+        Lock lock = lockObject.getLock();
+        Condition condition = lockObject.getCondition();
+
         StreamKey streamKey = null;
         List<StreamKey> streamIdList = keyList.getOrDefault(listKey, new ArrayList<>());
         if(id.equals("*")) {
@@ -50,7 +58,14 @@ public class XAddCommand implements StreamCommand{
             args--;
             mapList.put(arg, val);
         }
-        map.put(streamKey, mapList);
+        lock.lock();
+        try{
+            map.put(streamKey, mapList);
+        } finally {
+            condition.signalAll();
+            lock.unlock();
+        }
+
         out.write(("$"+streamKey.length()+"\r\n"+streamKey.toString()+"\r\n").getBytes());
     }
 

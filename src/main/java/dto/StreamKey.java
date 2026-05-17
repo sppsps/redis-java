@@ -61,9 +61,14 @@ public class StreamKey {
         return compare1 && compare2;
     }
 
-    private boolean compareIdsMore(String[] Id) {
+    public boolean compareIdsMore(String[] Id) {
         if(millisTime.compareTo(Id[0])>=0 && seqNum.compareTo(Id[1])>=0) return true;
             else return false;
+    }
+
+    public boolean compareStrictlyIdsMore(String[] Id) {
+        if(millisTime.compareTo(Id[0])>0 && seqNum.compareTo(Id[1])>=0) return true;
+        else return millisTime.compareTo(Id[0]) == 0 && seqNum.compareTo(Id[1]) > 0;
     }
 
     private boolean compareIdsLess(String[] Id) {

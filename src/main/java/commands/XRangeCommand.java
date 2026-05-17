@@ -1,5 +1,6 @@
 package commands;
 
+import dto.LockObject;
 import dto.StreamKey;
 import dto.StringReader;
 
@@ -13,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class XRangeCommand implements StreamCommand{
     @Override
-    public void execute(BufferedReader reader, ConcurrentHashMap<StreamKey, HashMap<String, String>> map, OutputStream out, int args, HashMap<String, List<StreamKey>> keyMap) throws IOException {
+    public void execute(BufferedReader reader, ConcurrentHashMap<StreamKey, HashMap<String, String>> map, OutputStream out, int args, HashMap<String, List<StreamKey>> keyMap, ConcurrentHashMap<String, LockObject> lockMap) throws IOException {
         StringReader stringReader = new StringReader(reader);
         String listKey = stringReader.read();
         String startId = stringReader.read();
