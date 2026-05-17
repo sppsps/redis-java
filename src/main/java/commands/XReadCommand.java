@@ -53,10 +53,18 @@ public class XReadCommand implements StreamCommand{
             lock.lock();
             long initialTime = System.currentTimeMillis();
             try {
-                while(keys.isEmpty() || !keys.getLast().compareStrictlyIdsMore(startId.split("-"))) {
-                    condition.awaitNanos(Long.parseLong(blockTime) * 1_1000);
-                    keys = keyMap.getOrDefault(listKey, new ArrayList<>());
-                    if((System.currentTimeMillis() - initialTime > Long.parseLong(blockTime))) break;
+                if(blockTime.equals("0")) {
+                    while(keys.isEmpty() || !keys.getLast().compareStrictlyIdsMore(startId.split("-"))) {
+                        condition.await();
+                        keys = keyMap.getOrDefault(listKey, new ArrayList<>());
+                    }
+                }
+                else {
+                    while (keys.isEmpty() || !keys.getLast().compareStrictlyIdsMore(startId.split("-"))) {
+                        condition.awaitNanos(Long.parseLong(blockTime) * 1_1000);
+                        keys = keyMap.getOrDefault(listKey, new ArrayList<>());
+                        if ((System.currentTimeMillis() - initialTime > Long.parseLong(blockTime))) break;
+                    }
                 }
             } finally {
                 lock.unlock();
