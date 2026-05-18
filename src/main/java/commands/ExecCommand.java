@@ -16,5 +16,10 @@ public class ExecCommand implements ISetGetCommand{
         if(!isMultiActive) {
             out.write("-ERR EXEC without MULTI\r\n".getBytes());
         }
+        else {
+            if(transactionList==null || transactionList.isEmpty()) {
+                out.write("*0\r\n".getBytes());
+            }
+        }
     }
 }
