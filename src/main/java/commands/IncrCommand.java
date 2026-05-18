@@ -18,18 +18,25 @@ public class IncrCommand implements ISetGetCommand{
             val = map.get(key);
         }
         String value = val.getValue();
-        String newVal = addOneToString(value);
+        String newVal = "";
+        try {
+            newVal = addOneToString(value);
+        } catch (Exception ex) {
+            out.write(("-ERR value is not an integer or out of range\r\n").getBytes());
+            return;
+        }
         val.setValue(newVal);
         map.put(key, val);
         out.write((":"+newVal+"\r\n").getBytes());
     }
 
-    private String addOneToString(String value) {
+    private String addOneToString(String value) throws Exception {
         StringBuilder stringBuilder = new StringBuilder();
         int carry = 0;
         int idx = value.length()-1;
         while(idx>=0) {
             int f = value.charAt(idx)-48;
+            if(f<0 || f>9) throw new Exception("error");
             if(idx==value.length()-1) f = f+carry+1;
             else f = f+carry;
             carry = f/10;
