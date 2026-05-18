@@ -13,7 +13,7 @@ import java.util.List;
 public class MultiStatusExecutor implements Execute{
     @Override
     public void execute(BufferedReader reader, HashMap<String, Value> map, OutputStream out, List<Transaction> transactionList) throws IOException {
-        out.write("+Queued\r\n".getBytes());
+        out.write("+QUEUED\r\n".getBytes());
         StringReader stringReader = new StringReader(reader);
         String command = stringReader.read();
         String key = stringReader.read();
