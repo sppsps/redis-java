@@ -13,7 +13,10 @@ public class IncrCommand implements ISetGetCommand{
     public void execute(BufferedReader reader, HashMap<String, Value> map, OutputStream out) throws IOException {
         StringReader stringReader = new StringReader(reader);
         String key = stringReader.read();
-        Value val = map.get(key);
+        Value val = new Value("1", -1L);
+        if(map.containsKey(key)) {
+            val = map.get(key);
+        }
         String value = val.getValue();
         String newVal = addOneToString(value);
         val.setValue(newVal);
