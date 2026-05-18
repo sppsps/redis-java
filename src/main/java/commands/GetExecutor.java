@@ -16,6 +16,10 @@ public class GetExecutor implements Execute{
         String queryKey = reader.readLine();
         long curTime = System.currentTimeMillis();
         Value ans = map.getOrDefault(queryKey, new Value("-1", -1L));
+        if(!map.containsKey(queryKey)) {
+            out.write("$-1\r\n".getBytes());
+            return;
+        }
         if(ans.getTimeToExpire()==-1)
         {
             out.write(("$"+ans.getValue().length()+"\r\n"+ans.getValue()+"\r\n").getBytes());

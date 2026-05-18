@@ -30,13 +30,13 @@ public class ParallelRequestProcessor implements Runnable {
     private List<String> l = new ArrayList<>();
     private final Logger LOG = LogManager.getLogger(ParallelRequestProcessor.class);
     HashMap<String, List<StreamKey>> streamKeyIdMap;
+    boolean isMultiActive = false;
 
     @Override
     public void run() {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(in));
         StringReader reader = new StringReader(bufferedReader);
         String numArgs = "";
-        boolean isMultiActive = false;
 
         try {
             numArgs = bufferedReader.readLine();
