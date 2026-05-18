@@ -10,5 +10,5 @@ import java.util.HashMap;
 import java.util.List;
 
 public interface ISetGetCommand {
-    void execute(BufferedReader reader, HashMap<String, Value> map, OutputStream out, List<Transaction> transactionList, boolean isMultiActive) throws IOException;
+    void execute(BufferedReader reader, HashMap<String, Value> map, OutputStream out, List<Transaction> transactionList, boolean isMultiActive, String cmd) throws IOException;
 }

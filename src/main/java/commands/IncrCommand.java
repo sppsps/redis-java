@@ -12,14 +12,14 @@ import java.util.List;
 
 public class IncrCommand implements ISetGetCommand{
     @Override
-    public void execute(BufferedReader reader, HashMap<String, Value> map, OutputStream out, List<Transaction> transactionList, boolean isMultiActive) throws IOException {
+    public void execute(BufferedReader reader, HashMap<String, Value> map, OutputStream out, List<Transaction> transactionList, boolean isMultiActive, String cmd) throws IOException {
         if(!isMultiActive){
             Execute executor = new IncrExecute();
-            executor.execute(reader, map, out, transactionList);
+            executor.execute(reader, map, out, transactionList, "INCR");
         }
         else {
             Execute executor = new MultiStatusExecutor();
-            executor.execute(reader, map, out, transactionList);
+            executor.execute(reader, map, out, transactionList, "INCR");
         }
     }
 }

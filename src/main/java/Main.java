@@ -1,6 +1,7 @@
 import dto.LockObject;
 import dto.StreamKey;
 import dto.Transaction;
+import dto.Value;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -33,12 +34,13 @@ public class Main {
             ConcurrentHashMap<String, List<String>> listMap = new ConcurrentHashMap<>();
             ConcurrentHashMap<StreamKey, HashMap<String, String>> streamMap = new ConcurrentHashMap<>();
             HashMap<String, List<StreamKey>> streamKeyMap = new HashMap<>();
+            HashMap<String, Value>map = new HashMap<>();
           while(true){
                 clientSocket = serverSocket.accept();
                 if(clientSocket==null) break;
                 DataInputStream inputStream = new DataInputStream(clientSocket.getInputStream());
                 DataOutputStream outputStream = new DataOutputStream(clientSocket.getOutputStream());
-                ParallelRequestProcessor requestProcessor = new ParallelRequestProcessor(inputStream, outputStream, lockMap, listMap, streamMap, streamKeyMap, new ArrayList<Transaction>());
+                ParallelRequestProcessor requestProcessor = new ParallelRequestProcessor(inputStream, outputStream, map, lockMap, listMap, streamMap, streamKeyMap, new ArrayList<Transaction>());
                 Thread thread = new Thread(requestProcessor);
                 thread.start();
           }

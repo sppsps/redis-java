@@ -12,10 +12,15 @@ import java.util.List;
 
 public class IncrExecute implements Execute{
     @Override
-    public void execute(BufferedReader reader, HashMap<String, Value> map, OutputStream out, List<Transaction> transactionList) throws IOException {
+    public void execute(BufferedReader reader, HashMap<String, Value> map, OutputStream out, List<Transaction> transactionList, String cmd) throws IOException {
         StringReader stringReader = new StringReader(reader);
         String key = stringReader.read();
+        String response = process(key, map, null);
+        out.write(response.getBytes());
+    }
+    public String process(String key, HashMap<String, Value> map, Value nullValue) {
         Value val = new Value("0", -1L);
+        StringBuilder s = new StringBuilder();
         if(map.containsKey(key)) {
             val = map.get(key);
         }
@@ -24,15 +29,15 @@ public class IncrExecute implements Execute{
         try {
             newVal = addOneToString(value);
         } catch (Exception ex) {
-            out.write(("-ERR value is not an integer or out of range\r\n").getBytes());
-            return;
+            s.append(("-ERR value is not an integer or out of range\r\n"));
+            return s.toString();
         }
         val.setValue(newVal);
         map.put(key, val);
-        out.write((":"+newVal+"\r\n").getBytes());
+        s.append(":").append(newVal).append("\r\n");
+        return s.toString();
     }
-
-    private String addOneToString(String value) throws Exception {
+    public String addOneToString(String value) throws Exception {
         StringBuilder stringBuilder = new StringBuilder();
         int carry = 0;
         int idx = value.length()-1;

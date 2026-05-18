@@ -13,7 +13,7 @@ import java.util.List;
 public class MultiCommand implements ISetGetCommand{
 
     @Override
-    public void execute(BufferedReader reader, HashMap<String, Value> map, OutputStream out, List<Transaction> transactionList, boolean isMultiActive) throws IOException {
+    public void execute(BufferedReader reader, HashMap<String, Value> map, OutputStream out, List<Transaction> transactionList, boolean isMultiActive, String cmd) throws IOException {
         out.write(("+OK\r\n").getBytes());
     }
 }

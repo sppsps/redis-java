@@ -16,14 +16,14 @@ public class SetCommand implements ISetGetCommand {
     private Logger LOG = LogManager.getLogger(SetCommand.class);
     public OutputStream out;
     @Override
-    public void execute(BufferedReader bufferedReader, HashMap<String, Value>map, OutputStream out, List<Transaction> transactionList, boolean isMultiActive) throws IOException{
+    public void execute(BufferedReader bufferedReader, HashMap<String, Value>map, OutputStream out, List<Transaction> transactionList, boolean isMultiActive, String cmd) throws IOException{
         if(!isMultiActive){
             Execute executor = new SetExecutor();
-            executor.execute(bufferedReader, map, out, transactionList);
+            executor.execute(bufferedReader, map, out, transactionList, "SET");
         }
         else {
             Execute executor = new MultiStatusExecutor();
-            executor.execute(bufferedReader, map, out, transactionList);
+            executor.execute(bufferedReader, map, out, transactionList, "SET");
         }
     }
 }

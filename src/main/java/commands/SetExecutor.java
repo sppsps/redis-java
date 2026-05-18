@@ -12,7 +12,7 @@ import java.util.List;
 
 public class SetExecutor implements Execute{
     @Override
-    public void execute(BufferedReader bufferedReader, HashMap<String, Value> map, OutputStream out, List<Transaction> transactionList) throws IOException {
+    public void execute(BufferedReader bufferedReader, HashMap<String, Value> map, OutputStream out, List<Transaction> transactionList, String cmd) throws IOException {
         StringReader reader = new StringReader(bufferedReader);
         String keyChars = bufferedReader.readLine();
         String key = bufferedReader.readLine();
@@ -27,6 +27,14 @@ public class SetExecutor implements Execute{
             value.setTimeToExpire(px.equals("PX")?Long.parseLong(timeToExpire)+curTime
                     :curTime+1000*Long.parseLong(timeToExpire));
         }
-        map.put(key, value);
+
+        process(key, map, value);
     }
+
+    @Override
+    public String process(String key, HashMap<String, Value> map, Value val) {
+        map.put(key, val);
+        return "+OK\r\n";
+    }
+
 }
