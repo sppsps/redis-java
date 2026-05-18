@@ -108,6 +108,10 @@ public class ParallelRequestProcessor implements Runnable {
                     ISetGetCommand incrCommand = new IncrCommand();
                     incrCommand.execute(bufferedReader, map, out);
                 }
+                else if("MULTI".equals(line)) {
+                    ISetGetCommand multiCommand = new MultiCommand();
+                    multiCommand.execute(bufferedReader, map, out);
+                }
             } catch (IOException | InterruptedException e) {
                 throw new RuntimeException(e);
             }
