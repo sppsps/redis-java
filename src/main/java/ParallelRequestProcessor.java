@@ -120,6 +120,11 @@ public class ParallelRequestProcessor implements Runnable {
                     execCommand.execute(bufferedReader, map, out, transactions, isMultiActive, "");
                     isMultiActive = false;
                 }
+                else if("DISCARD".equals(line)) {
+                    ISetGetCommand discardCommand = new DiscardCommand();
+                    discardCommand.execute(bufferedReader, map, out, transactions, isMultiActive, "");
+                    isMultiActive = false;
+                }
             } catch (IOException | InterruptedException e) {
                 throw new RuntimeException(e);
             }
