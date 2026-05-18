@@ -24,6 +24,7 @@ public class Main {
         ServerSocket serverSocket = null;
         Socket clientSocket = null;
         int port = 6379;
+        if(args.length>0 && args[0].equals("--port")) port = Integer.parseInt(args[1]);
         try {
           serverSocket = new ServerSocket(port);
           // Since the tester restarts your program quite often, setting SO_REUSEADDR
