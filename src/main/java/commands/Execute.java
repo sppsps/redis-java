@@ -1,5 +1,6 @@
 package commands;
 
+import dto.StringReader;
 import dto.Transaction;
 import dto.Value;
 
@@ -9,6 +10,6 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 
-public interface ISetGetCommand {
-    void execute(BufferedReader reader, HashMap<String, Value> map, OutputStream out, List<Transaction> transactionList, boolean isMultiActive) throws IOException;
+public interface Execute {
+    void execute(BufferedReader reader, HashMap<String, Value> map, OutputStream out, List<Transaction> transactionList) throws IOException;
 }

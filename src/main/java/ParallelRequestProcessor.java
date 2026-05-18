@@ -21,6 +21,7 @@ import java.util.concurrent.locks.ReentrantLock;
 @Getter
 public class ParallelRequestProcessor implements Runnable {
     private final ConcurrentHashMap<StreamKey, HashMap<String, String>> streamMap;
+    private final List<Transaction> transactions;
     private InputStream in;
     private OutputStream out;
     ConcurrentHashMap<String, LockObject> lockMap;
@@ -35,6 +36,7 @@ public class ParallelRequestProcessor implements Runnable {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(in));
         StringReader reader = new StringReader(bufferedReader);
         String numArgs = "";
+        boolean isMultiActive = false;
 
         try {
             numArgs = bufferedReader.readLine();
@@ -58,11 +60,11 @@ public class ParallelRequestProcessor implements Runnable {
                 }
                 else if("SET".equals(line)) {
                     ISetGetCommand setCommand = new SetCommand();
-                    setCommand.execute(bufferedReader, map, out);
+                    setCommand.execute(bufferedReader, map, out, transactions, isMultiActive);
                 }
                 else if("GET".equals(line)) {
                     ISetGetCommand getCommand = new GetCommand();
-                    getCommand.execute(bufferedReader, map, out);
+                    getCommand.execute(bufferedReader, map, out, transactions, isMultiActive);
                 }
                 else if("RPUSH".equals(line)) {
                     IListCommand listCommand = new RPushCommand();
@@ -106,11 +108,17 @@ public class ParallelRequestProcessor implements Runnable {
                 }
                 else if("INCR".equals(line)) {
                     ISetGetCommand incrCommand = new IncrCommand();
-                    incrCommand.execute(bufferedReader, map, out);
+                    incrCommand.execute(bufferedReader, map, out, transactions, isMultiActive);
                 }
                 else if("MULTI".equals(line)) {
+                    isMultiActive = true;
                     ISetGetCommand multiCommand = new MultiCommand();
-                    multiCommand.execute(bufferedReader, map, out);
+                    multiCommand.execute(bufferedReader, map, out, transactions, isMultiActive);
+                }
+                else if("EXEC".equals(line)) {
+                    ISetGetCommand execCommand = new ExecCommand();
+                    execCommand.execute(bufferedReader, map, out, transactions, isMultiActive);
+                    isMultiActive = false;
                 }
             } catch (IOException | InterruptedException e) {
                 throw new RuntimeException(e);
@@ -118,12 +126,13 @@ public class ParallelRequestProcessor implements Runnable {
         }
     }
 
-    public ParallelRequestProcessor(InputStream in, OutputStream out, ConcurrentHashMap<String, LockObject> lockMap, ConcurrentHashMap<String, List<String>> listMap, ConcurrentHashMap<StreamKey, HashMap<String, String>> streamMap, HashMap<String, List<StreamKey>> st) {
+    public ParallelRequestProcessor(InputStream in, OutputStream out, ConcurrentHashMap<String, LockObject> lockMap, ConcurrentHashMap<String, List<String>> listMap, ConcurrentHashMap<StreamKey, HashMap<String, String>> streamMap, HashMap<String, List<StreamKey>> st, List<Transaction> transactions) {
         this.in = in;
         this.out = out;
         this.lockMap = lockMap;
         this.listMap = listMap;
         this.streamMap = streamMap;
         this.streamKeyIdMap = st;
+        this.transactions = transactions;
     }
 }

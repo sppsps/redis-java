@@ -1,28 +1,24 @@
 package commands;
 
+import dto.Transaction;
 import dto.Value;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.List;
 
 public class GetCommand implements ISetGetCommand{
     @Override
-    public void execute(BufferedReader bufferedReader, HashMap<String, Value>map, OutputStream out) throws IOException {
-        String queryKeyChars = bufferedReader.readLine();
-        String queryKey = bufferedReader.readLine();
-        long curTime = System.currentTimeMillis();
-        Value ans = map.getOrDefault(queryKey, new Value("-1", -1L));
-        if(ans.getTimeToExpire()==-1)
-        {
-            out.write(("$"+ans.getValue().length()+"\r\n"+ans.getValue()+"\r\n").getBytes());
-            return ;
+    public void execute(BufferedReader bufferedReader, HashMap<String, Value>map, OutputStream out, List<Transaction> transactionList, boolean isMultiActive) throws IOException {
+        if(!isMultiActive) {
+            Execute executor = new GetExecutor();
+            executor.execute(bufferedReader, map, out, transactionList);
         }
-        if("-1".equals(ans.getValue()) || curTime>ans.getTimeToExpire()) {
-            out.write("$-1\r\n".getBytes());
-            return;
+        else {
+            Execute executor = new MultiStatusExecutor();
+            executor.execute(bufferedReader, map, out, transactionList);
         }
-        out.write(("$"+ans.getValue().length()+"\r\n"+ans.getValue()+"\r\n").getBytes());
     }
 }

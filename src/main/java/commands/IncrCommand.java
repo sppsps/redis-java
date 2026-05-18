@@ -1,16 +1,18 @@
 package commands;
 
 import dto.StringReader;
+import dto.Transaction;
 import dto.Value;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.List;
 
 public class IncrCommand implements ISetGetCommand{
     @Override
-    public void execute(BufferedReader reader, HashMap<String, Value> map, OutputStream out) throws IOException {
+    public void execute(BufferedReader reader, HashMap<String, Value> map, OutputStream out, List<Transaction> transactionList, boolean isMultiActive) throws IOException {
         StringReader stringReader = new StringReader(reader);
         String key = stringReader.read();
         Value val = new Value("0", -1L);

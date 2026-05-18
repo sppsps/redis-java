@@ -1,6 +1,5 @@
 package commands;
 
-import dto.StringReader;
 import dto.Transaction;
 import dto.Value;
 
@@ -10,10 +9,12 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 
-public class MultiCommand implements ISetGetCommand{
-
+public class ExecCommand implements ISetGetCommand{
     @Override
     public void execute(BufferedReader reader, HashMap<String, Value> map, OutputStream out, List<Transaction> transactionList, boolean isMultiActive) throws IOException {
-        out.write(("+OK\r\n").getBytes());
+        System.out.println(isMultiActive);
+        if(!isMultiActive) {
+            out.write("-ERR EXEC without MULTI\r\n".getBytes());
+        }
     }
 }

@@ -1,9 +1,11 @@
 import dto.LockObject;
 import dto.StreamKey;
+import dto.Transaction;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
@@ -36,7 +38,7 @@ public class Main {
                 if(clientSocket==null) break;
                 DataInputStream inputStream = new DataInputStream(clientSocket.getInputStream());
                 DataOutputStream outputStream = new DataOutputStream(clientSocket.getOutputStream());
-                ParallelRequestProcessor requestProcessor = new ParallelRequestProcessor(inputStream, outputStream, lockMap, listMap, streamMap, streamKeyMap);
+                ParallelRequestProcessor requestProcessor = new ParallelRequestProcessor(inputStream, outputStream, lockMap, listMap, streamMap, streamKeyMap, new ArrayList<Transaction>());
                 Thread thread = new Thread(requestProcessor);
                 thread.start();
           }
