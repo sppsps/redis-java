@@ -37,7 +37,9 @@ public class XReadCommand implements StreamCommand{
         }
         if(blockTime==null)  out.write(("*"+listKeys.size()+"\r\n").getBytes());
         for(int i=0;i<listKeys.size();i++) {
-            processReads(out, listKeys.get(i), startIds.get(i), keyMap, map, blockTime, lockMap, listKeys.size());
+            StreamKey latestKey = keyMap.getOrDefault(listKeys.get(i), new ArrayList<>()).getLast();
+            if(startIds.get(i).equals("$")) processReads(out, listKeys.get(i), latestKey.toString(), keyMap, map, blockTime, lockMap, listKeys.size());
+            else processReads(out, listKeys.get(i), startIds.get(i), keyMap, map, blockTime, lockMap, listKeys.size());
         }
     }
 
@@ -46,7 +48,13 @@ public class XReadCommand implements StreamCommand{
         List<StreamKey> keysInRange = new ArrayList<>();
         if(!lockMap.containsKey(listKey)) lockMap.put(listKey, new LockObject());
         LockObject lockObject = lockMap.get(listKey);
-        String[] startIds = startId.split("-");
+        String[] startIds = new String[2];
+        startIds = startId.split("-");
+//        if(startId.equals("$")) {
+//            startIds[0] = keys==null || keys.isEmpty()? "0":keys.getLast().getMillisTime();
+//            startIds[1] = keys==null || keys.isEmpty()? "0":keys.getLast().getSeqNum();
+////            startId = startIds[0]+"-"+startIds[1];
+//        }
         if(blockTime!=null) {
             Lock lock = lockObject.getLock();
             Condition condition = lockObject.getCondition();
@@ -54,13 +62,13 @@ public class XReadCommand implements StreamCommand{
             long initialTime = System.currentTimeMillis();
             try {
                 if(blockTime.equals("0")) {
-                    while(keys.isEmpty() || !keys.getLast().compareStrictlyIdsMore(startId.split("-"))) {
+                    while(keys!=null && keys.isEmpty() || !keys.getLast().compareStrictlyIdsMore(startIds)) {
                         condition.await();
                         keys = keyMap.getOrDefault(listKey, new ArrayList<>());
                     }
                 }
                 else {
-                    while (keys.isEmpty() || !keys.getLast().compareStrictlyIdsMore(startId.split("-"))) {
+                    while (keys.isEmpty() || !keys.getLast().compareStrictlyIdsMore(startIds)) {
                         condition.awaitNanos(Long.parseLong(blockTime) * 1_1000);
                         keys = keyMap.getOrDefault(listKey, new ArrayList<>());
                         if ((System.currentTimeMillis() - initialTime > Long.parseLong(blockTime))) break;
@@ -75,15 +83,17 @@ public class XReadCommand implements StreamCommand{
                 out.write("*-1\r\n".getBytes());
                 return;
             }
+            String[] finalStartIds1 = startIds;
             keys.forEach((key) -> {
-                if (key.inRange(startId, "+")) {
-                    if(!(key.getMillisTime().equals(startIds[0]) && key.getSeqNum().equals(startIds[1]))) keysInRange.add(key);
+                if (key.inRange(startId.equals("$")? finalStartIds1[0]+"-"+ finalStartIds1[1]:startId, "+")) {
+                    if(!(key.getMillisTime().equals(finalStartIds1[0]) && key.getSeqNum().equals(finalStartIds1[1]))) keysInRange.add(key);
                 }
             });
         }
         else {
+            String[] finalStartIds = startIds;
             keys.forEach((key) -> {
-                if (key.inRange(startId, "+")) keysInRange.add(key);
+                if (key.inRange(startId.equals("$")? finalStartIds[0]+"-"+ finalStartIds[1]:startId, "+")) keysInRange.add(key);
             });
         }
         if(keysInRange.size()==0) {
