@@ -7,12 +7,29 @@ import lombok.Setter;
 
 @Setter
 @Getter
-@NoArgsConstructor
 @AllArgsConstructor
 public class ReplicationInformation {
     boolean isReplica;
     String host;
     String port;
+    String replicationId;
+    String replicationOffset;
+
+    public String getReplicationId() {
+        return replicationId;
+    }
+
+    public void setReplicationId(String replicationId) {
+        this.replicationId = replicationId;
+    }
+
+    public String getReplicationOffset() {
+        return replicationOffset;
+    }
+
+    public void setReplicationOffset(String replicationOffset) {
+        this.replicationOffset = replicationOffset;
+    }
 
     public ReplicationInformation() {
     }
