@@ -49,6 +49,9 @@ public class ParallelRequestProcessor implements Runnable {
                 String line = bufferedReader.readLine();
                 LOG.info(line);
                 if(line==null) break;
+                if(line.startsWith("-p")) {
+                    reader.read();
+                }
                 if(line.startsWith("*")) args = Integer.parseInt(line.substring(1));
                 if("PING".equals(line)) {
                     out.write("+PONG\r\n".getBytes());
@@ -124,6 +127,10 @@ public class ParallelRequestProcessor implements Runnable {
                     ISetGetCommand discardCommand = new DiscardCommand();
                     discardCommand.execute(bufferedReader, map, out, transactions, isMultiActive, "");
                     isMultiActive = false;
+                }
+                else if("INFO".equals(line)) {
+                    ReplicationCommand infoCommand = new InfoCommand();
+                    infoCommand.execute(bufferedReader, out);
                 }
             } catch (IOException | InterruptedException e) {
                 throw new RuntimeException(e);
