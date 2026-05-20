@@ -1,7 +1,5 @@
-import dto.LockObject;
-import dto.StreamKey;
-import dto.Transaction;
-import dto.Value;
+import context.RedisContext;
+import dto.*;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -24,24 +22,31 @@ public class Main {
         ServerSocket serverSocket = null;
         Socket clientSocket = null;
         int port = 6379;
+        boolean isReplica = false;
+        String[] master = new String[2];
+        ReplicationInformation replicationInformation = new ReplicationInformation();
         if(args.length>0 && args[0].equals("--port")) port = Integer.parseInt(args[1]);
+        if(args.length>3) {
+            isReplica = args[2].equals("--replicaof");
+            replicationInformation.setReplica(isReplica);
+            master = args[3].split(" ");;
+            replicationInformation.setHost(master[0]);
+            replicationInformation.setPort(master[1]);
+        }
         try {
           serverSocket = new ServerSocket(port);
           // Since the tester restarts your program quite often, setting SO_REUSEADDR
           // ensures that we don't run into 'Address already in use' errors
           serverSocket.setReuseAddress(true);
           // Wait for connection from client.
-            ConcurrentHashMap<String, LockObject> lockMap = new ConcurrentHashMap<>();
-            ConcurrentHashMap<String, List<String>> listMap = new ConcurrentHashMap<>();
-            ConcurrentHashMap<StreamKey, HashMap<String, String>> streamMap = new ConcurrentHashMap<>();
-            HashMap<String, List<StreamKey>> streamKeyMap = new HashMap<>();
-            HashMap<String, Value>map = new HashMap<>();
+            RedisContext redisContext = new RedisContext(replicationInformation);
+
           while(true){
                 clientSocket = serverSocket.accept();
                 if(clientSocket==null) break;
                 DataInputStream inputStream = new DataInputStream(clientSocket.getInputStream());
                 DataOutputStream outputStream = new DataOutputStream(clientSocket.getOutputStream());
-                ParallelRequestProcessor requestProcessor = new ParallelRequestProcessor(inputStream, outputStream, map, lockMap, listMap, streamMap, streamKeyMap, new ArrayList<Transaction>());
+                ParallelRequestProcessor requestProcessor = new ParallelRequestProcessor(inputStream, outputStream, redisContext, new ArrayList<>());
                 Thread thread = new Thread(requestProcessor);
                 thread.start();
           }

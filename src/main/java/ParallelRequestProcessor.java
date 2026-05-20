@@ -1,4 +1,5 @@
 import commands.*;
+import context.RedisContext;
 import dto.*;
 import dto.StringReader;
 import lombok.Getter;
@@ -31,6 +32,7 @@ public class ParallelRequestProcessor implements Runnable {
     private final Logger LOG = LogManager.getLogger(ParallelRequestProcessor.class);
     HashMap<String, List<StreamKey>> streamKeyIdMap;
     boolean isMultiActive = false;
+    ReplicationInformation replicationInformation;
 
     @Override
     public void run() {
@@ -130,7 +132,7 @@ public class ParallelRequestProcessor implements Runnable {
                 }
                 else if("INFO".equals(line)) {
                     ReplicationCommand infoCommand = new InfoCommand();
-                    infoCommand.execute(bufferedReader, out);
+                    infoCommand.execute(bufferedReader, out, replicationInformation);
                 }
             } catch (IOException | InterruptedException e) {
                 throw new RuntimeException(e);
@@ -138,14 +140,15 @@ public class ParallelRequestProcessor implements Runnable {
         }
     }
 
-    public ParallelRequestProcessor(InputStream in, OutputStream out, HashMap<String, Value>map, ConcurrentHashMap<String, LockObject> lockMap, ConcurrentHashMap<String, List<String>> listMap, ConcurrentHashMap<StreamKey, HashMap<String, String>> streamMap, HashMap<String, List<StreamKey>> st, List<Transaction> transactions) {
+    public ParallelRequestProcessor(InputStream in, OutputStream out, RedisContext redisContext, List<Transaction> transactions) {
         this.in = in;
         this.out = out;
-        this.map = map;
-        this.lockMap = lockMap;
-        this.listMap = listMap;
-        this.streamMap = streamMap;
-        this.streamKeyIdMap = st;
+        this.map = redisContext.getMap();
+        this.lockMap = redisContext.getLockMap();
+        this.listMap = redisContext.getListMap();
+        this.streamMap = redisContext.getStreamMap();
+        this.streamKeyIdMap = redisContext.getStreamKeyMap();
+        this.replicationInformation = redisContext.getReplicationInformation();
         this.transactions = transactions;
     }
 }
