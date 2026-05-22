@@ -27,6 +27,12 @@ public class ReplicaHandler {
         DataInputStream in = new DataInputStream(masterSocket.getInputStream());
         makePing(out, in);
         makeReplConf(out, in);
+        makePsync(out, in);
+    }
+
+    private void makePsync(DataOutputStream out, DataInputStream in) throws IOException {
+        out.write("*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n".getBytes());
+        in.readLine();
     }
 
     public void makePing(DataOutputStream out, DataInputStream in) throws IOException {
