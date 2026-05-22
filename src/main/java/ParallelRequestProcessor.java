@@ -134,6 +134,10 @@ public class ParallelRequestProcessor implements Runnable {
                     ReplicationCommand infoCommand = new InfoCommand();
                     infoCommand.execute(bufferedReader, out, replicationInformation);
                 }
+                else if("REPLCONF".equals(line)) {
+                    ReplicationCommand replicationCommand = new ReplicationConfig();
+                    replicationCommand.execute(bufferedReader, out, replicationInformation);
+                }
             } catch (IOException | InterruptedException e) {
                 throw new RuntimeException(e);
             }
