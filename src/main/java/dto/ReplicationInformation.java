@@ -11,9 +11,18 @@ import lombok.Setter;
 public class ReplicationInformation {
     boolean isReplica;
     String host;
-    String port;
+    int masterPort;
+    int port;
     String replicationId;
     String replicationOffset;
+
+    public int getMasterPort() {
+        return masterPort;
+    }
+
+    public void setMasterPort(int masterPort) {
+        this.masterPort = masterPort;
+    }
 
     public String getReplicationId() {
         return replicationId;
@@ -34,7 +43,7 @@ public class ReplicationInformation {
     public ReplicationInformation() {
     }
 
-    public ReplicationInformation(String host, boolean isReplica, String port) {
+    public ReplicationInformation(String host, boolean isReplica, int port) {
         this.host = host;
         this.isReplica = isReplica;
         this.port = port;
@@ -56,11 +65,11 @@ public class ReplicationInformation {
         isReplica = replica;
     }
 
-    public String getPort() {
+    public int getPort() {
         return port;
     }
 
-    public void setPort(String port) {
+    public void setPort(int port) {
         this.port = port;
     }
 }

@@ -1,5 +1,6 @@
 import context.RedisContext;
 import dto.*;
+import replication.ReplicaHandler;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -26,22 +27,13 @@ public class Main {
         boolean isReplica = false;
         String[] master = new String[2];
         ReplicationInformation replicationInformation = new ReplicationInformation();
-        if(args.length>0 && args[0].equals("--port")) port = Integer.parseInt(args[1]);
-        Socket masterSocket = null;
-        if(args.length>3) {
-            isReplica = args[2].equals("--replicaof");
-            replicationInformation.setReplica(isReplica);
-            master = args[3].split(" ");;
-            replicationInformation.setHost(master[0]);
-            replicationInformation.setPort(master[1]);
-            try{
-                masterSocket = new Socket(master[0], Integer.parseInt(master[1]));
-            } catch(Exception e) {
-                throw new Exception(e.getMessage());
-            }
-            DataOutputStream out = new DataOutputStream(masterSocket.getOutputStream());
-            out.write("*1\r\n$4\r\nPING\r\n".getBytes());
+
+        if(args.length>0 && args[0].equals("--port")) {
+            port = Integer.parseInt(args[1]);
         }
+      replicationInformation.setPort(port);
+        Socket masterSocket = null;
+
         try {
           serverSocket = new ServerSocket(port);
           // Since the tester restarts your program quite often, setting SO_REUSEADDR
@@ -51,7 +43,10 @@ public class Main {
 
           // Wait for connection from client.
             RedisContext redisContext = new RedisContext(replicationInformation);
-
+            if(args.length>3) {
+                ReplicaHandler replicaHandler = new ReplicaHandler(replicationInformation ,args);
+                replicaHandler.handlePings();
+            }
           while(true){
                 clientSocket = serverSocket.accept();
                 if(clientSocket==null) break;
