@@ -25,12 +25,13 @@ public class ReplicaHandler {
         }
         DataOutputStream out = new DataOutputStream(masterSocket.getOutputStream());
         DataInputStream in = new DataInputStream(masterSocket.getInputStream());
-        makePing(out);
+        makePing(out, in);
         makeReplConf(out, in);
     }
 
-    public void makePing(DataOutputStream out) throws IOException {
+    public void makePing(DataOutputStream out, DataInputStream in) throws IOException {
         out.write("*1\r\n$4\r\nPING\r\n".getBytes());
+        in.readLine();
     }
 
     public void makeReplConf(DataOutputStream out, DataInputStream in) throws IOException {
