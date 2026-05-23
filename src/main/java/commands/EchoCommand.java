@@ -10,6 +10,7 @@ public class EchoCommand implements ICommand{
         while(line!=null) {
             line = reader.readLine();
             out.write((line+"\r\n").getBytes());
+out.flush();
         }
     }
 }

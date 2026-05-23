@@ -67,6 +67,7 @@ public class XAddCommand implements StreamCommand{
         }
 
         out.write(("$"+streamKey.length()+"\r\n"+streamKey.toString()+"\r\n").getBytes());
+out.flush();
     }
 
     private StreamKey fullyAutomatedId(List<StreamKey> streamKeys) {
@@ -105,6 +106,7 @@ public class XAddCommand implements StreamCommand{
                 }
                 else {
                     out.write("-ERR The ID specified in XADD must be greater than 0-0\r\n".getBytes());
+out.flush();
                     return false;
                 }
             }
@@ -113,6 +115,7 @@ public class XAddCommand implements StreamCommand{
         StreamKey topKey = st.getLast();
         if(curKey.getMillisTime().equals("0") && curKey.getSeqNum().equals("0")) {
             out.write("-ERR The ID specified in XADD must be greater than 0-0\r\n".getBytes());
+out.flush();
             return false;
         }
         if(curKey.getMillisTime().compareTo(topKey.getMillisTime())>0) {
@@ -122,11 +125,13 @@ public class XAddCommand implements StreamCommand{
             if(curKey.getSeqNum().compareTo(topKey.getSeqNum())>0) return true;
             else {
                 out.write("-ERR The ID specified in XADD is equal or smaller than the target stream top item\r\n".getBytes());
+out.flush();
                 return false;
             }
         }
         else {
             out.write("-ERR The ID specified in XADD is equal or smaller than the target stream top item\r\n".getBytes());
+out.flush();
             return false;
         }
 //        st.add(new StreamKey(topKey.getMillisTime(), topKey.getSeqNum()));

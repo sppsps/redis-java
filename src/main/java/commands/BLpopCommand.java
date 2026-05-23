@@ -46,6 +46,7 @@ public class BLpopCommand implements IListCommand {
                 log.info("waited time: " + (long)(remaining * 1_000_000));
                 if(l.get(listKey).isEmpty()) {
                     out.write("*-1\r\n".getBytes());
+out.flush();
                     return;
                 }
             }
@@ -59,6 +60,7 @@ public class BLpopCommand implements IListCommand {
         sb.append("$").append(listKey.length()).append("\r\n").append(listKey).append("\r\n");
         sb.append("$").append(removed.length()).append("\r\n").append(removed).append("\r\n");
         out.write(sb.toString().getBytes());
+out.flush();
         out.flush();
     }
 }

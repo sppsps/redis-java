@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Stack;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -39,20 +40,20 @@ public class Main {
           // Since the tester restarts your program quite often, setting SO_REUSEADDR
           // ensures that we don't run into 'Address already in use' errors
           serverSocket.setReuseAddress(true);
-
-
           // Wait for connection from client.
             RedisContext redisContext = new RedisContext(replicationInformation);
             if(args.length>3) {
                 ReplicaHandler replicaHandler = new ReplicaHandler(replicationInformation ,args);
                 replicaHandler.handlePings();
             }
-          while(true){
+            AtomicBoolean isReplicaAtive = new AtomicBoolean(false);
+
+            while(true){
                 clientSocket = serverSocket.accept();
-                if(clientSocket==null) break;
+               if(clientSocket==null) break;
                 DataInputStream inputStream = new DataInputStream(clientSocket.getInputStream());
                 DataOutputStream outputStream = new DataOutputStream(clientSocket.getOutputStream());
-                ParallelRequestProcessor requestProcessor = new ParallelRequestProcessor(inputStream, outputStream, redisContext, new ArrayList<>());
+                ParallelRequestProcessor requestProcessor = new ParallelRequestProcessor(inputStream, outputStream, redisContext, new ArrayList<>(), isReplicaAtive);
                 Thread thread = new Thread(requestProcessor);
                 thread.start();
           }

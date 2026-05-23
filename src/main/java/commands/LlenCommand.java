@@ -18,5 +18,6 @@ public class LlenCommand implements IListCommand{
         String listKey = reader.read();
         List<String> s = listMap.getOrDefault(listKey, new ArrayList<>());
         out.write((":"+s.size()+"\r\n").getBytes());
+out.flush();
     }
 }

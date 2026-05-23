@@ -31,6 +31,7 @@ public class LRangeCommand implements IListCommand{
         log.info("ListSize: "+s.size());
         if(!listMap.containsKey(command) || start>stop || start>s.size()-1) {
             out.write("*0\r\n".getBytes());
+out.flush();
             return;
         }
         List<String> queryList = s.subList(start, stop+1);
@@ -43,5 +44,6 @@ public class LRangeCommand implements IListCommand{
         });
 //        sb.append("\r\n");
         out.write(sb.toString().getBytes());
+out.flush();
     }
 }

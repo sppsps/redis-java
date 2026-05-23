@@ -25,9 +25,11 @@ public class XRangeCommand implements StreamCommand{
             if(key.inRange(startId, endId)) keysInRange.add(key);
         });
         out.write(("*"+keysInRange.size()+"\r\n").getBytes());
+out.flush();
         keysInRange.forEach((key)->{
             try {
                 out.write(("*"+"2"+"\r\n").getBytes());
+out.flush();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -36,11 +38,15 @@ public class XRangeCommand implements StreamCommand{
             try {
 
                 out.write(("$"+key.length()+"\r\n"+key+"\r\n").getBytes());
+out.flush();
                 out.write(("*"+keyVals.size()*2+"\r\n").getBytes());
+out.flush();
                 keyVals.forEach((k, v)->{
                     try {
                         out.write(("$"+k.length()+"\r\n"+k+"\r\n").getBytes());
+out.flush();
                         out.write(("$"+v.length()+"\r\n"+v+"\r\n").getBytes());
+out.flush();
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }

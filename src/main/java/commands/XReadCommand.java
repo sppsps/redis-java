@@ -36,6 +36,7 @@ public class XReadCommand implements StreamCommand{
             else startIds.add(stringReader.read());
         }
         if(blockTime==null)  out.write(("*"+listKeys.size()+"\r\n").getBytes());
+out.flush();
         for(int i=0;i<listKeys.size();i++) {
             StreamKey latestKey = keyMap.getOrDefault(listKeys.get(i), new ArrayList<>()).getLast();
             if(startIds.get(i).equals("$")) processReads(out, listKeys.get(i), latestKey.toString(), keyMap, map, blockTime, lockMap, listKeys.size());
@@ -81,6 +82,7 @@ public class XReadCommand implements StreamCommand{
             if(keys==null || keys.isEmpty()) {
                 Log.info("HEY");
                 out.write("*-1\r\n".getBytes());
+out.flush();
                 return;
             }
             String[] finalStartIds1 = startIds;
@@ -98,22 +100,32 @@ public class XReadCommand implements StreamCommand{
         }
         if(keysInRange.size()==0) {
             out.write("*-1\r\n".getBytes());
+out.flush();
             return;
         }
         if(blockTime!=null) out.write(("*"+size+"\r\n").getBytes());
+out.flush();
         out.write(("*"+"2"+"\r\n").getBytes());
+out.flush();
         out.write(("$"+listKey.length()+"\r\n"+listKey+"\r\n").getBytes());
+out.flush();
         out.write(("*" + keysInRange.size() + "\r\n").getBytes());
+out.flush();
         keysInRange.forEach((key)->{
             HashMap<String, String> keyVals = map.get(key);
             try {
                 out.write(("*"+"2"+"\r\n").getBytes());
+out.flush();
                 out.write(("$"+key.length()+"\r\n"+key+"\r\n").getBytes());
+out.flush();
                 out.write(("*"+keyVals.size()*2+"\r\n").getBytes());
+out.flush();
                 keyVals.forEach((k, v)->{
                     try {
                         out.write(("$"+k.length()+"\r\n"+k+"\r\n").getBytes());
+out.flush();
                         out.write(("$"+v.length()+"\r\n"+v+"\r\n").getBytes());
+out.flush();
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }

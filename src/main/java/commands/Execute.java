@@ -10,6 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 
 public interface Execute {
-    void execute(BufferedReader reader, HashMap<String, Value> map, OutputStream out, List<Transaction> transactionList, String cmd) throws IOException;
+    void execute(BufferedReader reader, HashMap<String, Value> map, OutputStream out, List<Transaction> transactionList, String cmd, List<String> keyVals) throws IOException;
     String process(String key, HashMap<String, Value>map, Value val);
 }

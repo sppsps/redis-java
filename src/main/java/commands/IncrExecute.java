@@ -12,11 +12,12 @@ import java.util.List;
 
 public class IncrExecute implements Execute{
     @Override
-    public void execute(BufferedReader reader, HashMap<String, Value> map, OutputStream out, List<Transaction> transactionList, String cmd) throws IOException {
+    public void execute(BufferedReader reader, HashMap<String, Value> map, OutputStream out, List<Transaction> transactionList, String cmd, List<String> keyVals) throws IOException {
         StringReader stringReader = new StringReader(reader);
         String key = stringReader.read();
         String response = process(key, map, null);
         out.write(response.getBytes());
+out.flush();
     }
     public String process(String key, HashMap<String, Value> map, Value nullValue) {
         Value val = new Value("0", -1L);

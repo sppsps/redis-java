@@ -12,8 +12,10 @@ import java.util.List;
 
 public class MultiStatusExecutor implements Execute{
     @Override
-    public void execute(BufferedReader reader, HashMap<String, Value> map, OutputStream out, List<Transaction> transactionList, String command) throws IOException {
+    public void execute(BufferedReader reader, HashMap<String, Value> map, OutputStream out, List<Transaction> transactionList, String command, List<String> keyVals) throws IOException {
         out.write("+QUEUED\r\n".getBytes());
+out.flush();
+out.flush();
         StringReader stringReader = new StringReader(reader);
         String key = stringReader.read();
         String val = stringReader.read();

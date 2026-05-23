@@ -11,10 +11,11 @@ import java.util.List;
 
 public class GetExecutor implements Execute{
     @Override
-    public void execute(BufferedReader reader, HashMap<String, Value> map, OutputStream out, List<Transaction> transactionList, String cmd) throws IOException {
+    public void execute(BufferedReader reader, HashMap<String, Value> map, OutputStream out, List<Transaction> transactionList, String cmd, List<String> keyVals) throws IOException {
         String queryKeyChars = reader.readLine();
         String queryKey = reader.readLine();
         out.write(process(queryKey, map, null).getBytes());
+out.flush();
     }
     @Override
     public String process(String queryKey, HashMap<String, Value> map, Value value) {

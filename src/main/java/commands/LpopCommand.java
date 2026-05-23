@@ -26,6 +26,7 @@ public class LpopCommand implements IListCommand{
         String val = "";
         if(s.size()==0) {
             out.write("$-1\r\n".getBytes());
+out.flush();
             return;
         }
         int numRemoves = 1;
@@ -45,6 +46,7 @@ public class LpopCommand implements IListCommand{
         log.info("Removed array "+ removed);
         if(removed.size()==1) {
             out.write(("$"+removed.getFirst().length()+"\r\n"+removed.getFirst()+"\r\n").getBytes());
+out.flush();
             return;
         }
         StringBuilder sb = new StringBuilder();
@@ -54,6 +56,7 @@ public class LpopCommand implements IListCommand{
         };
         log.info("stringbuilder: " + sb.toString());
         out.write(sb.toString().getBytes());
+out.flush();
         out.flush();
     }
 }

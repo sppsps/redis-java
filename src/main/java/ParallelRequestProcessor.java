@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -33,12 +34,14 @@ public class ParallelRequestProcessor implements Runnable {
     HashMap<String, List<StreamKey>> streamKeyIdMap;
     boolean isMultiActive = false;
     ReplicationInformation replicationInformation;
+    AtomicBoolean isReplicationActive;
 
     @Override
     public void run() {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(in));
         StringReader reader = new StringReader(bufferedReader);
         String numArgs = "";
+        List<String> keyVals = new ArrayList<>();
 
         try {
             numArgs = bufferedReader.readLine();
@@ -57,6 +60,7 @@ public class ParallelRequestProcessor implements Runnable {
                 if(line.startsWith("*")) args = Integer.parseInt(line.substring(1));
                 if("PING".equals(line)) {
                     out.write("+PONG\r\n".getBytes());
+out.flush();
                     out.flush();
                 }
                 else if("ECHO".equals(line)) {
@@ -65,11 +69,14 @@ public class ParallelRequestProcessor implements Runnable {
                 }
                 else if("SET".equals(line)) {
                     ISetGetCommand setCommand = new SetCommand();
-                    setCommand.execute(bufferedReader, map, out, transactions, isMultiActive, "");
+                    keyVals = new ArrayList<>();
+                    LOG.info("Started set ");
+                    setCommand.execute(bufferedReader, map, out, transactions, isMultiActive, "", keyVals);
+                    if(isReplicationActive.get()) sendCommandToReplica(out, replicationInformation, keyVals);
                 }
                 else if("GET".equals(line)) {
                     ISetGetCommand getCommand = new GetCommand();
-                    getCommand.execute(bufferedReader, map, out, transactions, isMultiActive, "");
+                    getCommand.execute(bufferedReader, map, out, transactions, isMultiActive, "", keyVals);
                 }
                 else if("RPUSH".equals(line)) {
                     IListCommand listCommand = new RPushCommand();
@@ -113,21 +120,21 @@ public class ParallelRequestProcessor implements Runnable {
                 }
                 else if("INCR".equals(line)) {
                     ISetGetCommand incrCommand = new IncrCommand();
-                    incrCommand.execute(bufferedReader, map, out, transactions, isMultiActive, "");
+                    incrCommand.execute(bufferedReader, map, out, transactions, isMultiActive, "", keyVals);
                 }
                 else if("MULTI".equals(line)) {
                     isMultiActive = true;
                     ISetGetCommand multiCommand = new MultiCommand();
-                    multiCommand.execute(bufferedReader, map, out, transactions, isMultiActive, "");
+                    multiCommand.execute(bufferedReader, map, out, transactions, isMultiActive, "", keyVals);
                 }
                 else if("EXEC".equals(line)) {
                     ISetGetCommand execCommand = new ExecCommand();
-                    execCommand.execute(bufferedReader, map, out, transactions, isMultiActive, "");
+                    execCommand.execute(bufferedReader, map, out, transactions, isMultiActive, "", keyVals);
                     isMultiActive = false;
                 }
                 else if("DISCARD".equals(line)) {
                     ISetGetCommand discardCommand = new DiscardCommand();
-                    discardCommand.execute(bufferedReader, map, out, transactions, isMultiActive, "");
+                    discardCommand.execute(bufferedReader, map, out, transactions, isMultiActive, "", keyVals);
                     isMultiActive = false;
                 }
                 else if("INFO".equals(line)) {
@@ -141,6 +148,7 @@ public class ParallelRequestProcessor implements Runnable {
                 else if("PSYNC".equals(line)) {
                     ReplicationCommand psyncCommand = new PsyncCommand();
                     psyncCommand.execute(bufferedReader, out, replicationInformation);
+                    isReplicationActive.set(true);
                 }
             } catch (IOException | InterruptedException e) {
                 throw new RuntimeException(e);
@@ -148,7 +156,18 @@ public class ParallelRequestProcessor implements Runnable {
         }
     }
 
-    public ParallelRequestProcessor(InputStream in, OutputStream out, RedisContext redisContext, List<Transaction> transactions) {
+    private void sendCommandToReplica(OutputStream out, ReplicationInformation replicationInformation, List<String> keyVals) throws IOException {
+        String key = keyVals.get(0);
+        String value = keyVals.get(1);
+        LOG.info("PROPAGATING " + key);
+
+        replicationInformation.getOut().write(("*3\r\n"+"$3\r\n"+"SET\r\n"+"$"+key.length()+"\r\n"+key+"\r\n"+"$"+value.length()+"\r\n"+value+"\r\n").getBytes());
+//        System.out.println("FLUSHED " + key);
+        LOG.info("FLUSHED "+key);
+        replicationInformation.getOut().flush();
+    }
+
+    public ParallelRequestProcessor(InputStream in, OutputStream out, RedisContext redisContext, List<Transaction> transactions, AtomicBoolean isReplicationActive) {
         this.in = in;
         this.out = out;
         this.map = redisContext.getMap();
@@ -158,5 +177,6 @@ public class ParallelRequestProcessor implements Runnable {
         this.streamKeyIdMap = redisContext.getStreamKeyMap();
         this.replicationInformation = redisContext.getReplicationInformation();
         this.transactions = transactions;
+        this.isReplicationActive = isReplicationActive;
     }
 }

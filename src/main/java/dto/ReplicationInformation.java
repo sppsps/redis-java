@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.OutputStream;
+
 @Setter
 @Getter
 @AllArgsConstructor
@@ -15,6 +17,15 @@ public class ReplicationInformation {
     int port;
     String replicationId;
     String replicationOffset;
+    OutputStream out;
+
+    public OutputStream getOut() {
+        return out;
+    }
+
+    public void setOut(OutputStream out) {
+        this.out = out;
+    }
 
     public int getMasterPort() {
         return masterPort;

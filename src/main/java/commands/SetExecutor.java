@@ -12,23 +12,26 @@ import java.util.List;
 
 public class SetExecutor implements Execute{
     @Override
-    public void execute(BufferedReader bufferedReader, HashMap<String, Value> map, OutputStream out, List<Transaction> transactionList, String cmd) throws IOException {
+    public void execute(BufferedReader bufferedReader, HashMap<String, Value> map, OutputStream out, List<Transaction> transactionList, String cmd, List<String> keyVals) throws IOException {
         StringReader reader = new StringReader(bufferedReader);
         String keyChars = bufferedReader.readLine();
         String key = bufferedReader.readLine();
         String valChars = bufferedReader.readLine();
         String val = bufferedReader.readLine();
-        out.write("+OK\r\n".getBytes());
+
         String px = reader.read();
         Value value = new Value(val, -1L);
-        if(px.equals("PX") || px.equals("EX")) {
+        if(px!=null && (px.equals("PX") || px.equals("EX"))) {
             String timeToExpire = reader.read();
             long curTime = System.currentTimeMillis();
             value.setTimeToExpire(px.equals("PX")?Long.parseLong(timeToExpire)+curTime
                     :curTime+1000*Long.parseLong(timeToExpire));
         }
-
+        keyVals.add(key);
+        keyVals.add(value.getValue());
         process(key, map, value);
+        out.write("+OK\r\n".getBytes());
+        out.flush();
     }
 
     @Override

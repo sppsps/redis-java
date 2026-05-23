@@ -11,23 +11,28 @@ import java.util.List;
 
 public class ExecCommand implements ISetGetCommand{
     @Override
-    public void execute(BufferedReader reader, HashMap<String, Value> map, OutputStream out, List<Transaction> transactionList, boolean isMultiActive, String cmd) throws IOException {
+    public void execute(BufferedReader reader, HashMap<String, Value> map, OutputStream out, List<Transaction> transactionList, boolean isMultiActive, String cmd, List<String > keyVal) throws IOException {
         System.out.println(isMultiActive);
         if(!isMultiActive) {
             out.write("-ERR EXEC without MULTI\r\n".getBytes());
+out.flush();
+out.flush();
         }
         else {
             if(transactionList==null || transactionList.isEmpty()) {
                 out.write("*0\r\n".getBytes());
+out.flush();
                 return;
             }
             out.write(("*"+transactionList.size()+"\r\n").getBytes());
+out.flush();
             transactionList.forEach((transaction -> {
                 if(transaction.getCommand().equals("SET")) {
                     Execute executor = new SetExecutor();
                     String resp = executor.process(transaction.getKey(), map, new Value(transaction.getValue(), -1L));
                     try {
                         out.write(resp.getBytes());
+out.flush();
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -37,6 +42,7 @@ public class ExecCommand implements ISetGetCommand{
                     String resp = executor.process(transaction.getKey(), map, new Value(transaction.getValue(), -1L));
                     try {
                         out.write(resp.getBytes());
+out.flush();
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -46,6 +52,7 @@ public class ExecCommand implements ISetGetCommand{
                     String resp = executor.process(transaction.getKey(), map, new Value(transaction.getValue(), -1L));
                     try {
                         out.write(resp.getBytes());
+out.flush();
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }

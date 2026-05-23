@@ -18,10 +18,13 @@ public class TypeCommand implements ITypeCommand{
         String key = reader.read();
         if(map.containsKey(key)) {
             out.write(("+string\r\n").getBytes());
+out.flush();
         }
         else if(streamMap.containsKey(key)) {
             out.write(("+stream\r\n").getBytes());
+out.flush();
         }
         else out.write("+none\r\n".getBytes());
+out.flush();
     }
 }

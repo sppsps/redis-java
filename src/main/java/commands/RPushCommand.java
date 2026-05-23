@@ -42,6 +42,7 @@ public class RPushCommand implements IListCommand{
             listMap.put(command, s);
             log.info("completed");
             out.write((":" + s.size() + "\r\n").getBytes());
+out.flush();
         } finally {
             condition.signalAll();
             lock.unlock();

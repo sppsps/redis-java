@@ -11,14 +11,14 @@ import java.util.List;
 
 public class GetCommand implements ISetGetCommand{
     @Override
-    public void execute(BufferedReader bufferedReader, HashMap<String, Value>map, OutputStream out, List<Transaction> transactionList, boolean isMultiActive, String cmd) throws IOException {
+    public void execute(BufferedReader bufferedReader, HashMap<String, Value>map, OutputStream out, List<Transaction> transactionList, boolean isMultiActive, String cmd, List<String > keyVal) throws IOException {
         if(!isMultiActive) {
             Execute executor = new GetExecutor();
-            executor.execute(bufferedReader, map, out, transactionList, "GET");
+            executor.execute(bufferedReader, map, out, transactionList, "GET", keyVal);
         }
         else {
             Execute executor = new MultiStatusExecutor();
-            executor.execute(bufferedReader, map, out, transactionList, "GET");
+            executor.execute(bufferedReader, map, out, transactionList, "GET", keyVal);
         }
     }
 }

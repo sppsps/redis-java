@@ -14,12 +14,22 @@ public class StringReader {
         this.reader = bufferedReader;
     }
 
-    public String read() throws IOException {
-        String line = reader.readLine();
+    public String read() {
+        String line = null;
+        try {
+            if(!reader.ready()) return null;
+            line = reader.readLine();
+        } catch (IOException e) {
+            return null;
+        }
         log.info("Line 1: "+line);
         if(line==null) return null;
 
-        line = reader.readLine();
+        try {
+            line = reader.readLine();
+        } catch (IOException e) {
+            return null;
+        }
         log.info("line2: "+line);
         return line;
     }

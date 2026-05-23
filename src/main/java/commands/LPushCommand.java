@@ -33,5 +33,6 @@ public class LPushCommand implements IListCommand{
         listMap.put(command, s);
         log.info("completed");
         out.write((":" + s.size() + "\r\n").getBytes());
+out.flush();
     }
 }
