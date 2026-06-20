@@ -27,12 +27,14 @@ public class Main {
         int port = 6379;
         boolean isReplica = false;
         String[] master = new String[2];
+        ReplicationConnections replicationConnections = new ReplicationConnections();
+        Replicas replicas = new Replicas();
         ReplicationInformation replicationInformation = new ReplicationInformation();
 
         if(args.length>0 && args[0].equals("--port")) {
             port = Integer.parseInt(args[1]);
         }
-      replicationInformation.setPort(port);
+        replicationInformation.setPort(port);
         Socket masterSocket = null;
 
         try {
@@ -43,29 +45,31 @@ public class Main {
           // Wait for connection from client.
             RedisContext redisContext = new RedisContext(replicationInformation);
             if(args.length>3) {
+                replicationInformation.setSocket(serverSocket);
                 ReplicaHandler replicaHandler = new ReplicaHandler(replicationInformation ,args);
                 replicaHandler.handlePings();
+                replicas.addToReplicas(replicationInformation);
+                redisContext.setReplicas(replicas);
             }
-            AtomicBoolean isReplicaAtive = new AtomicBoolean(false);
-
+            AtomicBoolean isReplicaActive = new AtomicBoolean(false);
             while(true){
                 clientSocket = serverSocket.accept();
-               if(clientSocket==null) break;
+                if(clientSocket==null) break;
                 DataInputStream inputStream = new DataInputStream(clientSocket.getInputStream());
                 DataOutputStream outputStream = new DataOutputStream(clientSocket.getOutputStream());
-                ParallelRequestProcessor requestProcessor = new ParallelRequestProcessor(inputStream, outputStream, redisContext, new ArrayList<>(), isReplicaAtive);
+                ParallelRequestProcessor requestProcessor = new ParallelRequestProcessor(inputStream, outputStream, redisContext, new ArrayList<>(), isReplicaActive);
                 Thread thread = new Thread(requestProcessor);
                 thread.start();
           }
         } catch (Exception e) {
-          System.out.println("IOException: " + e.getMessage());
+          System.out.println("excepion " + e.getMessage());
         } finally {
           try {
             if (clientSocket != null) {
                 clientSocket.close();
             }
           } catch (IOException e) {
-            System.out.println("IOException: " + e.getMessage());
+            System.out.println("exception: " + e.getMessage());
           }
         }
   }

@@ -1,5 +1,6 @@
 package commands;
 
+import dto.Replicas;
 import dto.ReplicationInformation;
 import dto.StringReader;
 
@@ -9,9 +10,9 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Base64;
 
-public class PsyncCommand implements ReplicationCommand{
-    @Override
-    public void execute(BufferedReader reader, OutputStream out, ReplicationInformation replicationInformation) throws IOException {
+public class PsyncCommand{
+
+    public void execute(BufferedReader reader, OutputStream out, Replicas replicas) throws IOException {
         StringReader stringReader = new StringReader(reader);
         String replicationId = stringReader.read();
         String replicaOffset = stringReader.read();
@@ -23,6 +24,8 @@ out.flush();
 out.flush();
         out.write(rdbFileBytes);
 out.flush();
+        ReplicationInformation replicationInformation = new ReplicationInformation();
         replicationInformation.setOut(out);
+        replicas.addToReplicas(replicationInformation);
     }
 }

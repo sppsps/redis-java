@@ -6,11 +6,14 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.OutputStream;
+import java.net.ServerSocket;
+import java.util.List;
 
 @Setter
 @Getter
 @AllArgsConstructor
 public class ReplicationInformation {
+    ServerSocket socket;
     boolean isReplica;
     String host;
     int masterPort;
@@ -18,6 +21,14 @@ public class ReplicationInformation {
     String replicationId;
     String replicationOffset;
     OutputStream out;
+
+    public ServerSocket getSocket() {
+        return socket;
+    }
+
+    public void setSocket(ServerSocket socket) {
+        this.socket = socket;
+    }
 
     public OutputStream getOut() {
         return out;

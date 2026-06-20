@@ -1,9 +1,6 @@
 package context;
 
-import dto.LockObject;
-import dto.ReplicationInformation;
-import dto.StreamKey;
-import dto.Value;
+import dto.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,6 +20,15 @@ public class RedisContext {
     HashMap<String, List<StreamKey>> streamKeyMap = new HashMap<>();
     HashMap<String, Value>map = new HashMap<>();
     ReplicationInformation replicationInformation = new ReplicationInformation();
+    Replicas replicas = new Replicas();
+
+    public Replicas getReplicas() {
+        return replicas;
+    }
+
+    public void setReplicas(Replicas replicas) {
+        this.replicas = replicas;
+    }
 
     public RedisContext(ReplicationInformation replicationInformation) {
         this.replicationInformation = replicationInformation;

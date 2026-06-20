@@ -1,5 +1,6 @@
 package replication;
 
+import dto.Replicas;
 import dto.ReplicationInformation;
 
 import java.io.*;

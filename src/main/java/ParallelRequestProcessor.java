@@ -35,7 +35,7 @@ public class ParallelRequestProcessor implements Runnable {
     boolean isMultiActive = false;
     ReplicationInformation replicationInformation;
     AtomicBoolean isReplicationActive;
-
+    Replicas replicas;
     @Override
     public void run() {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(in));
@@ -72,7 +72,7 @@ out.flush();
                     keyVals = new ArrayList<>();
                     LOG.info("Started set ");
                     setCommand.execute(bufferedReader, map, out, transactions, isMultiActive, "", keyVals);
-                    if(isReplicationActive.get()) sendCommandToReplica(out, replicationInformation, keyVals);
+                    if(isReplicationActive.get()) sendCommandToReplica(out, keyVals, replicas);
                 }
                 else if("GET".equals(line)) {
                     ISetGetCommand getCommand = new GetCommand();
@@ -146,8 +146,8 @@ out.flush();
                     replicationCommand.execute(bufferedReader, out, replicationInformation);
                 }
                 else if("PSYNC".equals(line)) {
-                    ReplicationCommand psyncCommand = new PsyncCommand();
-                    psyncCommand.execute(bufferedReader, out, replicationInformation);
+                    PsyncCommand psyncCommand = new PsyncCommand();
+                    psyncCommand.execute(bufferedReader, out, replicas);
                     isReplicationActive.set(true);
                 }
             } catch (IOException | InterruptedException e) {
@@ -156,15 +156,22 @@ out.flush();
         }
     }
 
-    private void sendCommandToReplica(OutputStream out, ReplicationInformation replicationInformation, List<String> keyVals) throws IOException {
+    private void sendCommandToReplica(OutputStream out, List<String> keyVals, Replicas replicas) throws IOException {
         String key = keyVals.get(0);
         String value = keyVals.get(1);
         LOG.info("PROPAGATING " + key);
 
-        replicationInformation.getOut().write(("*3\r\n"+"$3\r\n"+"SET\r\n"+"$"+key.length()+"\r\n"+key+"\r\n"+"$"+value.length()+"\r\n"+value+"\r\n").getBytes());
-//        System.out.println("FLUSHED " + key);
-        LOG.info("FLUSHED "+key);
-        replicationInformation.getOut().flush();
+        List<ReplicationInformation> replicationInformationList = replicas.getReplicationInformationList();
+        replicationInformationList.forEach((replicationInformation)->{
+            try {
+                replicationInformation.getOut().write(("*3\r\n"+"$3\r\n"+"SET\r\n"+"$"+key.length()+"\r\n"+key+"\r\n"+"$"+value.length()+"\r\n"+value+"\r\n").getBytes());
+                System.out.println("FLUSHED " + key);
+                LOG.info("FLUSHED "+key);
+                replicationInformation.getOut().flush();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     public ParallelRequestProcessor(InputStream in, OutputStream out, RedisContext redisContext, List<Transaction> transactions, AtomicBoolean isReplicationActive) {
@@ -178,5 +185,6 @@ out.flush();
         this.replicationInformation = redisContext.getReplicationInformation();
         this.transactions = transactions;
         this.isReplicationActive = isReplicationActive;
+        this.replicas = redisContext.getReplicas();
     }
 }
