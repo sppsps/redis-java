@@ -43,24 +43,35 @@ public class Main {
           // ensures that we don't run into 'Address already in use' errors
           serverSocket.setReuseAddress(true);
           // Wait for connection from client.
-            RedisContext redisContext = new RedisContext(replicationInformation);
-            if(args.length>3) {
-                replicationInformation.setSocket(serverSocket);
-                ReplicaHandler replicaHandler = new ReplicaHandler(replicationInformation ,args);
-                replicaHandler.handlePings();
-                replicas.addToReplicas(replicationInformation);
-                redisContext.setReplicas(replicas);
-            }
+          RedisContext redisContext = new RedisContext(replicationInformation);
+          if(args.length>3) {
+              replicationInformation.setSocket(serverSocket);
+              ReplicaHandler replicaHandler = new ReplicaHandler(replicationInformation ,args);
+              replicaHandler.handlePings();
+              replicas.addToReplicas(replicationInformation);
+              redisContext.setReplicas(replicas);
+              Thread replicationThread = new Thread(() -> {
+                  try {
+                      replicaHandler.listenForCommands(redisContext);
+                  } catch (IOException e) {
+                      throw new RuntimeException(e);
+                  }
+              });
+
+              replicationThread.start();
+          }
             AtomicBoolean isReplicaActive = new AtomicBoolean(false);
             while(true){
+                System.out.println("Before accept");
                 clientSocket = serverSocket.accept();
+                System.out.println("Accepted " + clientSocket.getRemoteSocketAddress());
                 if(clientSocket==null) break;
                 DataInputStream inputStream = new DataInputStream(clientSocket.getInputStream());
                 DataOutputStream outputStream = new DataOutputStream(clientSocket.getOutputStream());
                 ParallelRequestProcessor requestProcessor = new ParallelRequestProcessor(inputStream, outputStream, redisContext, new ArrayList<>(), isReplicaActive);
                 Thread thread = new Thread(requestProcessor);
                 thread.start();
-          }
+            }
         } catch (Exception e) {
           System.out.println("excepion " + e.getMessage());
         } finally {

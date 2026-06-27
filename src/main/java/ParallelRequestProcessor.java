@@ -145,6 +145,10 @@ out.flush();
                     ReplicationCommand replicationCommand = new ReplicationConfig();
                     replicationCommand.execute(bufferedReader, out, replicationInformation);
                 }
+                else if ("COMMAND".equals(line)) {
+                    out.write("*0\r\n".getBytes());
+                    out.flush();
+                }
                 else if("PSYNC".equals(line)) {
                     PsyncCommand psyncCommand = new PsyncCommand();
                     psyncCommand.execute(bufferedReader, out, replicas);
@@ -168,8 +172,8 @@ out.flush();
                 System.out.println("FLUSHED " + key);
                 LOG.info("FLUSHED "+key);
                 replicationInformation.getOut().flush();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+            } catch (Exception e) {
+                LOG.error("Exception : " + e);
             }
         });
     }
