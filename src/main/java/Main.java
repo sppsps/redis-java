@@ -57,7 +57,6 @@ public class Main {
                       throw new RuntimeException(e);
                   }
               });
-
               replicationThread.start();
           }
             AtomicBoolean isReplicaActive = new AtomicBoolean(false);

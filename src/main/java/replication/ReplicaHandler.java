@@ -90,6 +90,9 @@ public class ReplicaHandler {
                 Value v = map.get(key);
                 out.write(("$" + v.getValue().length() + "\r\n" + v.getValue() + "\r\n").getBytes());
             }
+            else if("REPLCONF".equals(line)) {
+                out.write(("*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n$1\r\n0\r\n").getBytes());
+            }
         }
     }
 }
