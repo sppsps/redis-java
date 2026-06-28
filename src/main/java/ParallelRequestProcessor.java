@@ -146,8 +146,8 @@ out.flush();
                     replicationCommand.execute(bufferedReader, out, replicationInformation);
                 }
                 else if("WAIT".equals(line)) {
-                    ReplicationCommand waitCommand = new WaitCommand();
-                    waitCommand.execute(bufferedReader, out, replicationInformation);
+                    WaitCommand waitCommand = new WaitCommand();
+                    waitCommand.execute(bufferedReader, out, replicas);
                 }
                 else if ("COMMAND".equals(line)) {
                     out.write("*0\r\n".getBytes());
