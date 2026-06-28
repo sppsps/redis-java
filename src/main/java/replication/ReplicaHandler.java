@@ -19,6 +19,7 @@ public class ReplicaHandler {
     private String[] args;
     ReplicationInformation replicationInformation;
     Socket masterSocket;
+    int offset = 0;
     public void handlePings() throws Exception {
         boolean isReplica = args[2].equals("--replicaof");
         replicationInformation.setReplica(isReplica);
@@ -78,20 +79,40 @@ public class ReplicaHandler {
             line = stringReader.read();
             HashMap<String, Value> map = redisContext.getMap();
             if("SET".equals(line)) {
-                map.put(stringReader.read(), new Value(stringReader.read(), -1L));
+                offset+=23;
+                String key = stringReader.read();
+                String val = stringReader.read();
+                offset += String.valueOf(key.length()).length();
+                offset += key.length();
+                offset += String.valueOf(val.length()).length();
+                offset += val.length();
+                map.put(key, new Value(val, -1L));
+            }
+            //*2\r\n$3\r\nGET\r\n$key.length\r\nKey\r\n
+            if("PING".equals(line)) {
+                offset+=14;
             }
             else if("DEL".equals(line)) {
-                if(!map.containsKey(stringReader.read())) out.write("$-1\r\n".getBytes());
-                map.remove(stringReader.read());
+                offset += 17;
+                String key = stringReader.read();
+                offset += String.valueOf(key.length()).length();
+                offset += key.length();
+                if(!map.containsKey(key)) out.write("$-1\r\n".getBytes());
+                map.remove(key);
             }
             else if("GET".equals(line)) {
                 String key = stringReader.read();
+                offset += 17;
+                offset += String.valueOf(key.length()).length();
+                offset += key.length();
                 if(!map.containsKey(key)) out.write("$-1\r\n".getBytes());
                 Value v = map.get(key);
                 out.write(("$" + v.getValue().length() + "\r\n" + v.getValue() + "\r\n").getBytes());
             }
             else if("REPLCONF".equals(line)) {
-                out.write(("*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n$1\r\n0\r\n").getBytes());
+                String off = String.valueOf(offset);
+                out.write(("*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n"+"$"+off.length()+"\r\n"+off+"\r\n").getBytes());
+                offset+=37;
             }
         }
     }
